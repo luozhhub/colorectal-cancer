@@ -9,8 +9,8 @@ install_biomaRt = function (){
 library("biomaRt")
 library("org.Hs.eg.db")
 
-#df_all = read.delim("/home/zhihl/Project/CRC/RNA_analysis/all_diff_data.txt",sep = "\t", header=T)
-df_all = read.delim("/home/zhihl/Project/CRC/RNA_analysis_0418_non_unique_bam/all_diff_data.txt",sep = "\t", header=T)
+df_all = read.delim("/home/zhihl/Project/CRC/RNA_analysis/all_diff_data.txt",sep = "\t", header=T)
+#df_all = read.delim("/home/zhihl/Project/CRC/RNA_analysis_0418_non_unique_bam/all_diff_data.txt",sep = "\t", header=T)
 mouse_gene_transcript = read.delim("/home/zhihl/Project/CRC/RNA_analysis/mart_export_mouse_gene_transcript.txt", sep="\t", header=T)
 orthologs_table = read.delim("/home/zhihl/Project/CRC/RNA_analysis/mart_export_humanGene_mouseGene.txt", sep="\t", header=T)
 
@@ -258,6 +258,9 @@ paper6_analysis = function(list_of_genes ){
 paper6_analysis(list_of_genes = commom_all_list)
 paper6_analysis(list_of_genes = commom_can_list)
 paper6_analysis(list_of_genes = commom_col_list)
+
+
+
 
 
 
