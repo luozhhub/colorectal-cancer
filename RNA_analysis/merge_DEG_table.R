@@ -122,7 +122,7 @@ create_total_table = function(read_count_table_path, output_dir){
   merge_data = select_data(count_table_path = read_count_table_path)
   #merge_data = select_data(count_table_path = "/home/zhihl/Project/CRC/RNA_analysis/count_table_average.txt")
   if (!file_test("-d", output_dir)){ dir.create(output_dir)}
-  out_file_path = paste(output_dir, "all_diff_data.txt", sep = "/")
+  out_file_path = paste(output_dir, "all_diff_data_ZC.txt", sep = "/")
   write.table(merge_data, out_file_path, sep="\t", quote=F, row.names=T, col.names = T, na="NA", eol="\n")
 }
 
