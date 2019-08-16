@@ -1,3 +1,7 @@
+"""
+this script is used to select enhancer and promoter from chromhmm result, and then used to create a master list
+"""
+
 #!/usr/bin/python
 import os
 import pandas as pd
@@ -8,6 +12,17 @@ import re
 class chromhmm_analysis():
     def __init__(self):
         self.state_dir = "/home/zhluo/Project/CRC/data_nazhang/step13_chromhmmOutput/13state"
+        self.peakfiles_dir = "/home/zhluo/Project/CRC/data_nazhang/step17_macs2_every"
+        
+        self.enhancer_states = ["stateE7.bed.sort.merged", "stateE8.bed.sort.merged", "stateE10.bed.sort.merged"]
+        self.promoter_states = ["stateE11.bed.sort.merged", "stateE12.bed.sort.merged", "stateE13.bed.sort.merged"]
+        self.state_list = ["E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8", "E9", "E10", "E11", "E12", "E13"]
+        
+        #preprocess
+        self.peakfiles_list = []
+        for onefile in os.listdir(self.peakfiles_dir):
+            if re.search(".narrowPeak", onefile):
+                self.peakfiles_list.append(os.path.join(self.peakfiles_dir, onefile))
 
     def run(self, cmd=None, wkdir=None):
         sys.stderr.write("Running %s ...\n" % cmd)
@@ -81,39 +96,33 @@ if __name__ == "__main__":
     step = 3
     chromhmm_obj = chromhmm_analysis()
     if step < 1:
-        #chromhmm_obj = chromhmm_analysis()
-        state_list = ["E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8", "E9", "E10", "E11", "E12", "E13"]
-        stateDir = "/home/zhluo/Project/CRC/data_nazhang/step22_state_peaks/state"
-        """
-        for one_state in state_list:
-            #stateDir = "/home/zhluo/Project/CRC/data_nazhang/step22_state_peaks/state"
+        stateDir = "/home/zhluo/Project/CRC/data_nazhang/step22_state_peaks/state"     
+        for one_state in self.state_list:
+            #create each state bed file
             state_combined_path = "%s/state%s.bed"% (stateDir, one_state)
             chromhmm_obj.curate_state(state=one_state, outputFile=state_combined_path)
-            #the stateE8.bed is combined from several weeks data, so it must be merged
+            #merged each state file from many weeks
             state_combined_sort_file = state_combined_path + ".sort"
             chromhmm_obj.sort_bed(inputFile=state_combined_path, outputFile = state_combined_sort_file)
             state_combined_merge_file = state_combined_sort_file + ".merged"
             chromhmm_obj.merge_bed(inputFile = state_combined_sort_file, outputFile = state_combined_merge_file)
-        """
+        
     
         select_peaks_dir = "/home/zhluo/Project/CRC/data_nazhang/step22_state_peaks/select_peaks"
-        peakfiles_dir = "/home/zhluo/Project/CRC/data_nazhang/step17_macs2_every"
+        #peakfiles_dir = "/home/zhluo/Project/CRC/data_nazhang/step17_macs2_every"
 
-        peakfiles_list = []
-        for onefile in os.listdir(peakfiles_dir):
-            if re.search(".narrowPeak", onefile):
-                peakfiles_list.append(os.path.join(peakfiles_dir, onefile))
+        
 
 
-        enhancer_states = ["stateE7.bed.sort.merged", "stateE8.bed.sort.merged", "stateE10.bed.sort.merged"]
-        promoter_states = ["stateE11.bed.sort.merged", "stateE12.bed.sort.merged", "stateE13.bed.sort.merged"]
+        #enhancer_states = ["stateE7.bed.sort.merged", "stateE8.bed.sort.merged", "stateE10.bed.sort.merged"]
+        #promoter_states = ["stateE11.bed.sort.merged", "stateE12.bed.sort.merged", "stateE13.bed.sort.merged"]
 
         stateFiles = os.listdir(stateDir)
         df_state_peaks = pd.DataFrame()
         for stateF in stateFiles:
             if not re.search(".merged", stateF):
                 continue
-            for peakF in peakfiles_list:
+            for peakF in self.peakfiles_list:
                 filename = os.path.basename(peakF)
                 selectpeakF = os.path.join(select_peaks_dir,  filename.replace("_peaks.narrowPeak", "") + "." + stateF.replace(".sort.merged", ""))
                 state_F = os.path.join(stateDir, stateF)
@@ -173,10 +182,10 @@ if __name__ == "__main__":
     if step < 4:
         stateDir = "/home/zhluo/Project/CRC/data_nazhang/step22_state_peaks/state"
 
-        enhancer_states = ["stateE7.bed.sort.merged", "stateE8.bed.sort.merged", "stateE10.bed.sort.merged"]
-        promoter_states = ["stateE11.bed.sort.merged", "stateE12.bed.sort.merged", "stateE13.bed.sort.merged"]
-        enhancer_files = [os.path.join(stateDir, mark_s) for mark_s in enhancer_states]
-        promoter_files = [os.path.join(stateDir, mark_s) for mark_s in promoter_states]
+        #enhancer_states = ["stateE7.bed.sort.merged", "stateE8.bed.sort.merged", "stateE10.bed.sort.merged"]
+        #promoter_states = ["stateE11.bed.sort.merged", "stateE12.bed.sort.merged", "stateE13.bed.sort.merged"]
+        enhancer_files = [os.path.join(stateDir, mark_s) for mark_s in self.enhancer_states]
+        promoter_files = [os.path.join(stateDir, mark_s) for mark_s in self.promoter_states]
         
         out_enhancer = "/home/zhluo/Project/CRC/data_nazhang/step22_state_peaks/enhancer/enhancer.state.bed"
         chromhmm_obj.merge_all_peaks(select_peak_files = enhancer_files, state_total_file = out_enhancer)

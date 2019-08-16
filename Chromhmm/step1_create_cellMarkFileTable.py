@@ -3,7 +3,7 @@ this script is used to create cellMarkFileTable
 usage:
 python ./step1_create_cellMarkFileTable.py
 cd /home/zhluo/Project/CRC/data_nazhang/pbs/
-qsub -q batch -V -l nodes=1:ppn=1 -l mem=60G /home/zhluo/Project/CRC/data_nazhang/pbs/run_chromhmm.pbs
+qsub -q batch -l nodes=1:ppn=25 -l mem=60G /home/zhluo/Project/CRC/data_nazhang/pbs/run_chromhmm.pbs
 """
 #!/usr/bin/python
 
