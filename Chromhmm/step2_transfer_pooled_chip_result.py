@@ -89,7 +89,7 @@ def transfer_peak():
         lines = handle.readlines()
         jobID = (lines[195].split("/")[9])
 
-        """
+        
         #get pooled peak path    
         pooled_dir = os.path.join(dataBaseDir, jobID, "call-macs2_pooled/execution")
         files_p = os.listdir(pooled_dir)
@@ -99,7 +99,7 @@ def transfer_peak():
             peakF = oneP
         pooled_peak = os.path.join(pooled_dir, peakF)
         os.system("scp %s zhluo@211.69.141.147:/home/zhluo/Project/CRC/data_nazhang/step30_peak/pooled_peak" % pooled_peak)
-        """
+        
         
         
         #get psudo peak path
