@@ -60,11 +60,32 @@ class get_read_count(element_peaks):
                     outFName = oneF.split("_")[0] + ".pr2.count.bed"                    
                 outFile = os.path.join(outputDir, outFName)
                 cmd = "bedtools intersect -a %s -b %s  -c > %s" % (peak_file, select_file, outFile)
-                run(cmd)
+                self.run(cmd)
             
-
+    def merge_samples(self):
+        """
+        this function is used to merge different sample to one kind of marker table
+        
+        """
+        psudo_bed_dir = "/home/zhluo/Project/CRC/data_nazhang/step33_pseudo_diff/read_count_bed"
+        group_dict = {}
+        element = ["enhancer", "promoter", "repressed", "heterochromatin"]
+        marker = ["H3K27ac", "H3K4me3", "H3K27me3", "H3K9me3"]
+        #element_dict = dict(zip(element, marker))
+        
+        for ele in marker:
+            group_dict[ele] = ["ctrl-1-%s.pr1.count.bed"%ele,  "ctrl-1-%s.pr2.count.bed"%ele,  "2weeks-1-%s.pr1.count.bed"%ele,  "2weeks-1-%s.pr2.count.bed"%ele,  "4weeks-1-%s.pr1.count.bed"%ele,
+            "4weeks-1-%s.pr2.count.bed"%ele,  "7weeks-1-%s.pr1.count.bed"%ele,  "7weeks-1-%s.pr2.count.bed"%ele,  "10weeks-1-%s.pr1.count.bed"%ele,  "10weeks-1-%s.pr2.count.bed"%ele]
+            df_blank = pd.DataFrame()
+            for one_bed in group_dict[ele]:
+                print(os.path.join(psudo_bed_dir, one_bed))
+                df = pd.read_csv(os.path.join(psudo_bed_dir, one_bed), header=None, index_col=3, sep="\t", names=["chr", "start", "end", "count"])
+                df_blank[one_bed] = df["count"]
+            df_name = ele + "_count_table.txt"
+            df_blank.to_csv(os.path.join("/home/zhluo/Project/CRC/data_nazhang/step33_pseudo_diff/", df_name), sep="\t", header=True, index=True)
 
 if __name__ == "__main__":
     getReadCount = get_read_count()
     #getReadCount.add_peak_id()
-    getReadCount.read_count()
+    #getReadCount.read_count()
+    getReadCount.merge_samples()
