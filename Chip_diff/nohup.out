@@ -1,0 +1,12 @@
+./step6_DEG_analysis_for_chip_data.py: 8: ./step6_DEG_analysis_for_chip_data.py: 
+use the script merge_DEG_table.R
+firstly, we should change the count table format, because the dataframe of python and R are not compatibility
+just delete the first column in first line is OK
+
+usage:
+python step6_DEG_analysis_for_chip_data.py
+: not found
+XIO:  fatal IO error 11 (Resource temporarily unavailable) on X server "localhost:22.0"
+      after 27 requests (26 known processed) with 0 events remaining.
+from: can't read /var/mail/subprocess
+./step6_DEG_analysis_for_chip_data.py: 12: ./step6_DEG_analysis_for_chip_data.py: Syntax error: "(" unexpected
