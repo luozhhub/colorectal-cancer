@@ -1,3 +1,6 @@
+#this script is used to compare RNA with human genetic data
+#the data:/home/zhihl/Project/CRC/RNA_analysis/all_diff_data.txt
+
 #--------------install package-----------------------------------
 install_biomaRt = function (){
   if (!requireNamespace("BiocManager", quietly = TRUE))

@@ -2,22 +2,101 @@
 title: "step10_analysis"
 author: "luozhihui"
 date: "2019/8/27"
-output: html_document
+output: 
+  html_document:
+    code_folding: show
+    highlight: haddock
+    keep_md: yes
+    number_sections: yes
+    theme: readable
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+      toc_depth: 3
+  pdf_document:
+    toc: yes
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
 ```
 
-## R Markdown
+## Load data
+First, we need to load R library, data file ,and R function  
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r load related data}
+source("step9_DEG_chip_gene.R")
+library("DT")
 ```
+
+## For RNA
+show the RNA differential expression data
+diff_gene_in_mouse has 4 parameters:
+1. dataframe
+2. column 1
+3. column 2
+4. log2 fold change
+5. gene ID
+
+```{r RNA data}
+mark = ""
+state = ""
+summary_rna = Summary_data(mark, state, diff_gene_in_mouse, "RNA")
+summary_rna$total_table
+```
+
+
+
+
+
+
+## For one mark
+for each mark we can run this chunck
+enhancer
+```{r enhancer data}
+#read one mark
+mark = "H3K27ac"
+state = "enhancer"
+summary_enhancer = Summary_data(mark, state, diff_gene_for_chip, "Chip")
+summary_enhancer$total_table
+```
+promoter
+```{r promoter data}
+mark = "H3K4me3"
+state = "promoter"
+summary_promoter = Summary_data(mark, state, diff_gene_for_chip, "Chip")
+summary_promoter$total_table
+```
+repressed
+```{r repressed data}
+mark = "H3K27me3"
+state = "repressed"
+summary_repressed = Summary_data(mark, state, diff_gene_for_chip, "Chip")
+summary_repressed$total_table
+
+```
+heterochromatin
+```{r heterochromatin data}
+mark = "H3K9me3"
+state = "heterochromatin"
+summary_heterochromatin = Summary_data(mark, state, diff_gene_for_chip, "Chip")
+summary_heterochromatin$total_table
+```
+
+## Hypergeometric test for RNA and one mark
+```{r, Hypergeometric test}
+data_enhancer = enrichment(summary_rna, summary_enhancer, "H3K27ac")
+data_enhancer
+data_promoter = enrichment(summary_rna, summary_promoter, "H3K4me3")
+data_promoter
+data_repressed = enrichment(summary_rna, summary_repressed, "H3K27me3")
+data_repressed
+data_heterochromatin = enrichment(summary_rna, summary_heterochromatin, "H3K9me3")
+data_heterochromatin
+
+```
+
 
 ## Including Plots
 

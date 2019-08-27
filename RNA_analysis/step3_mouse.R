@@ -1,7 +1,11 @@
+#step 1. use ZC data:df_all = read.delim("/home/zhihl/Project/CRC/RNA_analysis/test_ZC_data/all_diff_data_ZC.txt",sep = "\t", header=T)
+#step 2. use lzh data: df_all = read.delim("/home/zhihl/Project/CRC/RNA_analysis/all_diff_data.txt",sep = "\t", header=T)
+#this script is used to compare RNA data with mouse genetic data
 library("org.Mm.eg.db")
 
 
-df_all = read.delim("/home/zhihl/Project/CRC/RNA_analysis/test_ZC_data/all_diff_data_ZC.txt",sep = "\t", header=T)
+#df_all = read.delim("/home/zhihl/Project/CRC/RNA_analysis/test_ZC_data/all_diff_data_ZC.txt",sep = "\t", header=T)
+df_all = read.delim("/home/zhihl/Project/CRC/RNA_analysis/all_diff_data.txt",sep = "\t", header=T)
 
 #add gene symbol in dataframe
 add_symbol = function(){
@@ -26,14 +30,14 @@ diff_gene_in_mouse = function(col_1 = "log2FoldChange.10wkVSctrl", col_2 = "padj
   week_df = df_all[,c(col_1, col_2)]
   diff_week_up = rownames(na.omit(week_df[week_df[,1] > fold_change & week_df[,2] < 0.01, ]))
   diff_week_down = rownames(na.omit(week_df[week_df[,1] < -(fold_change) & week_df[,2] < 0.01, ]))
-  return (list( unique(diff_week_up), unique(diff_week_down)))
+  #return (list( unique(diff_week_up), unique(diff_week_down)))
   
-  #cols <- c("SYMBOL", "ENTREZID")
-  #up_symbol = select(org.Mm.eg.db, keys=as.vector(diff_week_up), columns=cols, keytype="SYMBOL")
-  #up_list = unique(up_symbol[, id_type])
-  #down_symbol = select(org.Mm.eg.db, keys=as.vector(diff_week_down), columns=cols, keytype="SYMBOL")
-  #down_list = unique(down_symbol[, id_type])
-  #return (list(up_list, down_list))
+  cols <- c("SYMBOL", "ENTREZID")
+  up_symbol = select(org.Mm.eg.db, keys=as.vector(diff_week_up), columns=cols, keytype="ENSEMBL")
+  up_list = unique(up_symbol[, id_type])
+  down_symbol = select(org.Mm.eg.db, keys=as.vector(diff_week_down), columns=cols, keytype="ENSEMBL")
+  down_list = unique(down_symbol[, id_type])
+  return (list(up_list, down_list))
 }
 
 diff_genes_10w = diff_gene_in_mouse("log2FoldChange.10wkVSctrl", "padj.10wkVSctrl")
