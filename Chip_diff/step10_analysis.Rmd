@@ -27,7 +27,7 @@ First, we need to load R library, data file ,and R function
 
 ```{r load related data}
 source("step9_DEG_chip_gene.R")
-library("DT")
+
 ```
 
 ## For RNA
@@ -97,13 +97,96 @@ data_heterochromatin
 
 ```
 
+## merge RNA, enhancer, promoter
+```{r 3 factor result}
+#in cancer
+up_enhancer_promoter = intersect(summary_enhancer$commom_cancer_list[[1]], summary_promoter$commom_cancer_list[[1]])
+down_enhancer_promoter = intersect(summary_enhancer$commom_cancer_list[[2]], summary_promoter$commom_cancer_list[[2]])
+#in colits
+up_enhancer_promoter = intersect(summary_enhancer$commom_colits_list[[1]], summary_promoter$commom_colits_list[[1]])
+down_enhancer_promoter = intersect(summary_enhancer$commom_colits_list[[2]], summary_promoter$commom_colits_list[[2]])
+
+#up_enhancer_repressed = intersect(summary_enhancer$commom_cancer_list[[1]], summary_repressed$commom_cancer_list[[2]])
+
+
+print(length(up_enhancer_promoter))
+#down_enhancer_promoter
+
+
+```
+
+## GWAS gene
+```{r GWAS data}
+path_gwas = "/home/zhihl/Project/CRC/Chip_analysis/peak_dir_0821/gwas_gene/gene_list.txt"
+CRCgwasList = as.vector(read.delim(path_gwas, sep = "\t", header=F)$V1)
+
+cols <- c("SYMBOL", "ENTREZID", "ENSEMBL")
+library(org.Hs.eg.db)
+up_cancer_gwas = intersect(CRCgwasList, mouse2human(summary_promoter$commom_cancer_list[[1]]))
+down_cancer_gwas = intersect(CRCgwasList, mouse2human(summary_promoter$commom_cancer_list[[2]]))
+up_colits_gwas = intersect(CRCgwasList, mouse2human(summary_promoter$commom_colits_list[[1]]))
+down_colits_gwas = intersect(CRCgwasList, mouse2human(summary_promoter$commom_colits_list[[2]]))
+
+
+print(length(up_cancer_gwas))
+symbol = AnnotationDbi::select(org.Hs.eg.db, keys=as.vector(up_cancer_gwas), columns=cols, keytype="ENSEMBL")
+print(symbol)
+print(length(down_cancer_gwas))
+print(length(up_colits_gwas))
+symbol = AnnotationDbi::select(org.Hs.eg.db, keys=as.vector(up_colits_gwas), columns=cols, keytype="ENSEMBL")
+print(symbol)
+print(length(down_colits_gwas))
+
+
+#enhancer
+up_cancer_gwas = intersect(CRCgwasList, mouse2human(summary_enhancer$commom_cancer_list[[1]]))
+down_cancer_gwas = intersect(CRCgwasList, mouse2human(summary_enhancer$commom_cancer_list[[2]]))
+up_colits_gwas = intersect(CRCgwasList, mouse2human(summary_enhancer$commom_colits_list[[1]]))
+down_colits_gwas = intersect(CRCgwasList, mouse2human(summary_enhancer$commom_colits_list[[2]]))
+
+
+
+symbol = AnnotationDbi::select(org.Hs.eg.db, keys=as.vector(up_cancer_gwas), columns=cols, keytype="ENSEMBL")
+print(length(up_cancer_gwas))
+print(symbol)
+
+
+symbol = AnnotationDbi::select(org.Hs.eg.db, keys=as.vector(down_cancer_gwas), columns=cols, keytype="ENSEMBL")
+print(length(down_cancer_gwas))
+print(symbol)
+
+symbol = AnnotationDbi::select(org.Hs.eg.db, keys=as.vector(up_colits_gwas), columns=cols, keytype="ENSEMBL")
+print(length(up_colits_gwas))
+print(symbol)
+
+symbol = AnnotationDbi::select(org.Hs.eg.db, keys=as.vector(down_colits_gwas), columns=cols, keytype="ENSEMBL")
+print(length(down_colits_gwas))
+print(symbol)
+```
+
+## cmap
+```{r cmap data}
+df_all = read.delim("/home/zhihl/Project/CRC/RNA_analysis/all_diff_data.txt",sep = "\t", header=T)
+col_1 = "log2FoldChange.tumorVSctrl"
+col_2 = "padj.tumorVSctrl"
+week_df = df_all[,c(col_1, col_2)]
+cancer_df = week_df[week_df$padj.tumorVSctrl < 0.01,]
+can_df = cancer_df[order(cancer_df$log2FoldChange.tumorVSctrl),]
+cols <- c("SYMBOL", "ENTREZID", "ENSEMBL")
+symbol = AnnotationDbi::select(org.Hs.eg.db, keys=as.vector(mouse2human(row.names(head(can_df, 400)))), columns=cols, keytype="ENSEMBL")
+up_gene = symbol[,"SYMBOL"]
+#write.table(up_gene , "cancer_up.txt", sep="\n", quote=F, row.names=F, col.names = F, na="NA", eol="\n")
+symbol = AnnotationDbi::select(org.Hs.eg.db, keys=as.vector(mouse2human(row.names(tail(can_df, 400)))), columns=cols, keytype="ENSEMBL")
+down_gene = symbol[,"SYMBOL"]
+#write.table(down_gene , "cancer_down.txt", sep="\n", quote=F, row.names=F, col.names = F, na="NA", eol="\n")
+```
 
 ## Including Plots
 
 You can also embed plots, for example:
 
 ```{r pressure, echo=FALSE}
-plot(pressure)
+#plot(pressure)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
