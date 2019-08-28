@@ -25,7 +25,7 @@ knitr::opts_chunk$set(echo = TRUE, cache = FALSE)
 ## Load data
 First, we need to load R library, data file ,and R function  
 
-```{r load related data}
+```{r load related data, echo=FALSE, results='hide'}
 source("step9_DEG_chip_gene.R")
 
 ```
@@ -96,34 +96,65 @@ data_heterochromatin = enrichment(summary_rna, summary_heterochromatin, "H3K9me3
 data_heterochromatin
 
 ```
-
-## merge RNA, enhancer, promoter
+## two marker and RNA identity
+在这个部分，主要可以看两个histone信号一致的基因有哪些  
+marker的一致指的是：  
+enhancer 上调，promoter 上调， RNA上调  
+enhancer 上调，repressed 下调， RNA上调  
+enhancer 上调，heterochromatin 下调， RNA上调  
+promoter上调， repressed下调， RNA上调  
+promoter上调， heterochromatin下调， RNA上调  
+repressed下调，heterochromatin下调， RNA上调  
+这些都算一致，并且会在state状态里面标up，up指的是基因的表达上调了  
+反之也是一样
+表格里的列名如下：two_mark, state, up_down, geneID, symbol, withRNA  
+two_mark：指的是哪两种histone marker在差异表达上是一致的
+state：有三个取值cancer（表示在7week 和 10week里取交集）， colits（表示在2week 和 4week 里取交集）， all（表示在所有的week里取交集）
+up_down：有两个取值up（表示基因表达上调的信号改变），down（表示会让基因表达下调的改变）
+geneID：ensembl ID
+symbol：gene symbol
+withRNA：true表示RNA的差异表达情况与表观信号差异表达一致，false表示两者不一致（有可能是RNA在这里差异表达方向相反，也可能是不差异表达）
+上次在ppt里展示的几个基因是按照：two_mark：enhancer_promoter， state：all， up_down：up和down都有， withRNA：true，挑选出来的
+### enhancer and promoter
 ```{r 3 factor result}
-#in cancer
-up_enhancer_promoter = intersect(summary_enhancer$commom_cancer_list[[1]], summary_promoter$commom_cancer_list[[1]])
-down_enhancer_promoter = intersect(summary_enhancer$commom_cancer_list[[2]], summary_promoter$commom_cancer_list[[2]])
-#in colits
-up_enhancer_promoter = intersect(summary_enhancer$commom_colits_list[[1]], summary_promoter$commom_colits_list[[1]])
-down_enhancer_promoter = intersect(summary_enhancer$commom_colits_list[[2]], summary_promoter$commom_colits_list[[2]])
-
-#up_enhancer_repressed = intersect(summary_enhancer$commom_cancer_list[[1]], summary_repressed$commom_cancer_list[[2]])
-up_enhancer_promoter = intersect(summary_enhancer$commom_all_list[[1]], summary_promoter$commom_all_list[[1]])
-down_enhancer_promoter = intersect(summary_enhancer$commom_all_list[[2]], summary_promoter$commom_all_list[[2]])
-
-print(length(down_enhancer_promoter))
+#print(length(down_enhancer_promoter))
 #enhancer_promoter
-df_enhancer_promoter = two_mark(summary_enhancer, summary_promoter, summary_rna)
+df_enhancer_promoter = two_mark(summary_enhancer, summary_promoter, summary_rna, "enhancer_promoter")
 datatable(df_enhancer_promoter)
-
 #enhancer_repressed
-#enhancer_heterochromatin
-#promoter_repreesed
-#promoter_heterochromatin
-#repressed_heterochromatin
-
-
-
 ```
+### enhancer and repressed
+```{r enhancer and repressed}
+summary_repressed_verse = reverse_list(summary_repressed)
+df_enhancer_repressed = two_mark(summary_enhancer, summary_repressed_verse, summary_rna, "enhancer_repressed")
+datatable(df_enhancer_repressed)
+#promoter_repreesed
+```
+### promoter and repreesed
+```{r promoter and repreesed}
+df_promoter_repressed = two_mark(summary_promoter, summary_repressed_verse, summary_rna, "promoter_repressed")
+datatable(df_promoter_repressed)
+#enhancer_heterochromatin
+```
+### enhancer and heterochromatin
+```{r enhancer and heterochromatin}
+summary_heterochromatin_reverse = reverse_list(summary_heterochromatin)
+df_enhancer_heterochromatin = two_mark(summary_enhancer, summary_heterochromatin_reverse, summary_rna, "enhancer_heterochromatin")
+datatable(df_enhancer_heterochromatin)
+#promoter_heterochromatin
+```
+### promoter and heterochromatin
+```{r promoter and heterochromatin}
+df_promoter_heterochromatin = two_mark(summary_promoter, summary_heterochromatin_reverse, summary_rna, "promoter_heterochromatin")
+datatable(df_promoter_heterochromatin)
+#repressed_heterochromatin
+```
+### repressed and heterochromatin
+```{r repressed and heterochromatin}
+df_repressed_heterochromatin = two_mark(summary_repressed_verse, summary_heterochromatin_reverse, summary_rna, "repressed_heterochromatin")
+datatable(df_repressed_heterochromatin)
+```
+
 
 ## GWAS gene
 ```{r GWAS data}
