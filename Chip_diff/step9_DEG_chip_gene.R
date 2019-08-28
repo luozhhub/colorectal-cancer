@@ -14,6 +14,18 @@ library("DT")
 
 mouse_gene_transcript = read.delim("/home/zhihl/Project/CRC/RNA_analysis/mart_export_mouse_gene_transcript.txt", sep="\t", header=T)
 orthologs_table = read.delim("/home/zhihl/Project/CRC/RNA_analysis/mart_export_humanGene_mouseGene.txt", sep="\t", header=T)
+gene_detail = read.delim("/home/zhihl/Project/CRC/RNA_analysis/mart_export_mouse_geneid_symbol.txt", sep="\t", header=T)
+
+#2. export biomart data
+export_biomart_geneid_symbol = function(){
+  select_dataset=paste(tolower(substring(strsplit("Mus musculus"," ")[[1]][1],1,1)),
+                       strsplit("Mus musculus"," ")[[1]][2],"_gene_ensembl",sep = "")
+  ensembl=useMart("ensembl", dataset=select_dataset)
+  gene_detail=getBM(attributes=c("ensembl_gene_id", "external_gene_name"),mart = ensembl)
+  write.table(gene_detail, file = "/home/zhihl/Project/CRC/RNA_analysis/mart_export_mouse_geneid_symbol.txt", row.names = T, sep="\t", col.names=T)
+}
+
+
 
 #3. convert essemble to entrez 
 essemble_to_entrez = function (deg_list){
@@ -159,7 +171,7 @@ Summary_data = function(mark, state, diff_gene_func, data_type){
   return(summary)
 }
 
-
+#9.enrichment RNA and Chip
 enrichment = function (list1, list2, mark){
   diff_genes = data.frame(matrix(NA,6,6), row.names=c("cancer_up", "cancer_down","colits_up", "colits_down","all_up", "all_down"))
   colnames(diff_genes) = c("state", "shared_number", "RNA_number", "left_gene_number", "chip_gene_number",  "P_value")
@@ -192,7 +204,59 @@ enrichment = function (list1, list2, mark){
 
 
 
-
+#10. two mark result
+two_mark = function(summary_enhancer, summary_promoter, summary_rna){
+  df = data.frame(matrix(NA,18,6))
+  #enhancer, promoter
+  #in cancer
+  #two_mark, state, up_down, geneID, symbol, withRNA
+  
+  #cancer 
+  up_enhancer_promoter = intersect(summary_enhancer$commom_cancer_list[[1]], summary_promoter$commom_cancer_list[[1]])
+  withRNA = intersect(up_enhancer_promoter, summary_rna$commom_cancer_list[[1]])
+  
+  df_1 =  data.frame(two_mark = rep("enhancer_promote", length(up_enhancer_promoter)), state = rep("cancer", length(up_enhancer_promoter)),
+  up_down = rep("up", length(up_enhancer_promoter)), geneID = up_enhancer_promoter, 
+  symbol = gene_detail[match(up_enhancer_promoter, gene_detail$ensembl_gene_id),"external_gene_name"], withRNA = ifelse(up_enhancer_promoter%in%withRNA,"true","false"))
+  
+  down_enhancer_promoter = intersect(summary_enhancer$commom_cancer_list[[2]], summary_promoter$commom_cancer_list[[2]])
+  withRNA = intersect(down_enhancer_promoter, summary_rna$commom_cancer_list[[2]])
+  df_2 =  data.frame(two_mark = rep("enhancer_promote", length(down_enhancer_promoter)), state = rep("cancer", length(down_enhancer_promoter)),
+                     up_down = rep("down", length(down_enhancer_promoter)), geneID = down_enhancer_promoter, 
+                     symbol = gene_detail[match(down_enhancer_promoter, gene_detail$ensembl_gene_id),"external_gene_name"], withRNA = ifelse(down_enhancer_promoter%in%withRNA,"true","false"))
+  new_df = rbind(df_1, df_2)
+  #colits
+  up_enhancer_promoter = intersect(summary_enhancer$commom_colits_list[[1]], summary_promoter$commom_colits_list[[1]])
+  withRNA = intersect(up_enhancer_promoter, summary_rna$commom_colits_list[[1]])
+  
+  df_3 =  data.frame(two_mark = rep("enhancer_promote", length(up_enhancer_promoter)), state = rep("colits", length(up_enhancer_promoter)),
+                     up_down = rep("up", length(up_enhancer_promoter)), geneID = up_enhancer_promoter, 
+                     symbol = gene_detail[match(up_enhancer_promoter, gene_detail$ensembl_gene_id),"external_gene_name"], withRNA = ifelse(up_enhancer_promoter%in%withRNA,"true","false"))
+  
+  new_df = rbind(new_df, df_3)
+  down_enhancer_promoter = intersect(summary_enhancer$commom_colits_list[[2]], summary_promoter$commom_colits_list[[2]])
+  withRNA = intersect(down_enhancer_promoter, summary_rna$commom_colits_list[[2]])
+  df_4 =  data.frame(two_mark = rep("enhancer_promote", length(down_enhancer_promoter)), state = rep("colits", length(down_enhancer_promoter)),
+                     up_down = rep("down", length(down_enhancer_promoter)), geneID = down_enhancer_promoter, 
+                     symbol = gene_detail[match(down_enhancer_promoter, gene_detail$ensembl_gene_id),"external_gene_name"], withRNA = ifelse(down_enhancer_promoter%in%withRNA,"true","false"))
+  new_df = rbind(new_df, df_4)
+  
+  #all
+  up_enhancer_promoter = intersect(summary_enhancer$commom_all_list[[1]], summary_promoter$commom_all_list[[1]])
+  withRNA = intersect(up_enhancer_promoter, summary_rna$commom_all_list[[1]])
+  
+  df_5 =  data.frame(two_mark = rep("enhancer_promote", length(up_enhancer_promoter)), state = rep("all", length(up_enhancer_promoter)),
+                     up_down = rep("up", length(up_enhancer_promoter)), geneID = up_enhancer_promoter, 
+                     symbol = gene_detail[match(up_enhancer_promoter, gene_detail$ensembl_gene_id),"external_gene_name"], withRNA = ifelse(up_enhancer_promoter%in%withRNA,"true","false"))
+  new_df = rbind(new_df, df_5)
+  down_enhancer_promoter = intersect(summary_enhancer$commom_all_list[[2]], summary_promoter$commom_all_list[[2]])
+  withRNA = intersect(down_enhancer_promoter, summary_rna$commom_all_list[[2]])
+  df_6 =  data.frame(two_mark = rep("enhancer_promote", length(down_enhancer_promoter)), state = rep("all", length(down_enhancer_promoter)),
+                     up_down = rep("down", length(down_enhancer_promoter)), geneID = down_enhancer_promoter, 
+                     symbol = gene_detail[match(down_enhancer_promoter, gene_detail$ensembl_gene_id),"external_gene_name"], withRNA = ifelse(down_enhancer_promoter%in%withRNA,"true","false"))
+  new_df = rbind(new_df, df_6)
+  return(new_df)
+}
 
 
 

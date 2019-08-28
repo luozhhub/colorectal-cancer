@@ -19,7 +19,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+knitr::opts_chunk$set(echo = TRUE, cache = FALSE)
 ```
 
 ## Load data
@@ -107,10 +107,20 @@ up_enhancer_promoter = intersect(summary_enhancer$commom_colits_list[[1]], summa
 down_enhancer_promoter = intersect(summary_enhancer$commom_colits_list[[2]], summary_promoter$commom_colits_list[[2]])
 
 #up_enhancer_repressed = intersect(summary_enhancer$commom_cancer_list[[1]], summary_repressed$commom_cancer_list[[2]])
+up_enhancer_promoter = intersect(summary_enhancer$commom_all_list[[1]], summary_promoter$commom_all_list[[1]])
+down_enhancer_promoter = intersect(summary_enhancer$commom_all_list[[2]], summary_promoter$commom_all_list[[2]])
 
+print(length(down_enhancer_promoter))
+#enhancer_promoter
+df_enhancer_promoter = two_mark(summary_enhancer, summary_promoter, summary_rna)
+datatable(df_enhancer_promoter)
 
-print(length(up_enhancer_promoter))
-#down_enhancer_promoter
+#enhancer_repressed
+#enhancer_heterochromatin
+#promoter_repreesed
+#promoter_heterochromatin
+#repressed_heterochromatin
+
 
 
 ```
