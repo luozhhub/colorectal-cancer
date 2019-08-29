@@ -380,6 +380,44 @@ gwas_gene = function(summary_rna, name){
   return(new_df)
 }
 
+#13. add gene symbol to source data
+add_symbol = function(table_path, type, out_path, peak_gene_path){
+  df_all = read.delim(table_path,sep = "\t", header=T)
+  if (type == "RNA"){
+    ensemblID = rownames(df_all)
+    symbol = ensembl_to_symbol(ensemblID, "mouse")
+    new_df = cbind.data.frame(ensemblID, df_all)
+    new_df = cbind.data.frame(symbol, new_df)
+  }
+  if (type == "Chip"){
+    peak_gene = read.delim(peak_gene_path, sep="\t", header=T)
+    peak_gene_table = peak_gene
+    peak_id = rownames(df_all)
+    ind = match(peak_id, peak_gene_table$ID)
+    ensemblID = peak_gene_table[ind, "gene_id"]
+    symbol = ensembl_to_symbol(ensemblID, "mouse")
+    new_df = cbind.data.frame(peak_id, df_all)
+    new_df = cbind.data.frame(ensemblID, new_df)
+    new_df = cbind.data.frame(symbol, new_df)
+  }
+  
+  write.table(new_df, out_path, sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+}
+add_symbol("/home/zhihl/Project/CRC/RNA_analysis/all_diff_data.txt", "RNA", "/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/final_result/all_diff_data_add_symbol.txt", "")
+add_symbol("/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/all_diff_data_H3K27ac.txt", "Chip",
+           "/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/final_result/all_diff_data_H3K27ac_add_symbol.txt",
+           "/home/zhihl/Project/CRC/Chip_analysis/peak_dir_0821/enhancer/enhancer.peak.unique.ID.gene_name.bed")
+add_symbol("/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/all_diff_data_H3K4me3.txt", "Chip",
+           "/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/final_result/all_diff_data_H3K4me3_add_symbol.txt",
+           "/home/zhihl/Project/CRC/Chip_analysis/peak_dir_0821/promoter/promoter.peak.unique.ID.gene_name.bed")
+add_symbol("/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/all_diff_data_H3K27me3.txt", "Chip",
+           "/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/final_result/all_diff_data_H3K27me3_add_symbol.txt",
+           "/home/zhihl/Project/CRC/Chip_analysis/peak_dir_0821/repressed/repressed.peak.unique.ID.gene_name.bed")
+add_symbol("/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/all_diff_data_H3K9me3.txt", "Chip",
+           "/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/final_result/all_diff_data_H3K9me3_add_symbol.txt",
+           "/home/zhihl/Project/CRC/Chip_analysis/peak_dir_0821/heterochromatin/heterochromatin.peak.unique.ID.gene_name.bed")
+
+
 
 #-------------------------other GWAS data-------------------------------------------------------------------------------------
 #human_orthologs = mouse2human(commom_ccan_up)

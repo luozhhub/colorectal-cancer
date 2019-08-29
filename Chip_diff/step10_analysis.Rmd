@@ -34,8 +34,11 @@ source("step9_DEG_chip_gene.R")
 ##  Summary for RNA
 RNA differential expression genes number in each state.  
 分别列出了各个week，以及组合week的差异表达基因数量。  
-筛选的条件是：Pvalue < 0.01, fold change >2 或者 < 2.   
-
+筛选的条件是：Pvalue < 0.01, log2(fold change) >1 或者 < -1.   
+Colits_2and4: 指2week 和 4week的交集。   
+Cancer_7and10： 指7week 和 10week的交集。   
+only_cancer：指Cancer_7and10 减去all_week的基因数目。   
+only_colits：指Colits_2and4 减去all_week的基因数目。     
 
 ```{r RNA data, echo = FALSE}
 mark = ""
@@ -47,7 +50,7 @@ summary_rna$total_table
 ## Summary for histone marker
 RNA differential expression genes number in each state.   
 分别列出了各个week，以及组合week的差异表达基因数量。  
-筛选的条件是：Pvalue < 0.01, fold change >2 或者 < 2.   
+筛选的条件是：Pvalue < 0.01, log2(fold change) >1 或者 < -1.   
 
 **enhancer**
 ```{r enhancer data, echo = FALSE}
@@ -84,7 +87,7 @@ summary_heterochromatin$total_table
 ```
 
 ## enrichment between RNA and one histone mark
-筛选出各个week中，Pvalue < 0.01, fold change >2 或者 < 2.   的差异表达基因。  
+筛选出各个week中，Pvalue < 0.01, log2(fold change) >1 或者 < -1.   的差异表达基因。  
 然后，将数据分成三个状态，cancer， colits， all  
 cancer表示：7week和10week取交集  
 colits表示：2week和4week取交集  
@@ -153,6 +156,7 @@ datatable(df_enhancer_promoter)
 ```{r enhancer and repressed, echo = FALSE}
 summary_repressed_verse = reverse_list(summary_repressed)
 df_enhancer_repressed = two_mark(summary_enhancer, summary_repressed_verse, summary_rna, "enhancer_repressed")
+df_three_factor = rbind(df_enhancer_promoter, df_enhancer_repressed)
 datatable(df_enhancer_repressed)
 #promoter_repreesed
 ```
@@ -160,6 +164,7 @@ datatable(df_enhancer_repressed)
 ### promoter and repreesed
 ```{r promoter and repreesed, echo = FALSE}
 df_promoter_repressed = two_mark(summary_promoter, summary_repressed_verse, summary_rna, "promoter_repressed")
+df_three_factor = rbind(df_three_factor, df_promoter_repressed)
 datatable(df_promoter_repressed)
 #enhancer_heterochromatin
 ```
@@ -168,6 +173,7 @@ datatable(df_promoter_repressed)
 ```{r enhancer and heterochromatin, echo = FALSE}
 summary_heterochromatin_reverse = reverse_list(summary_heterochromatin)
 df_enhancer_heterochromatin = two_mark(summary_enhancer, summary_heterochromatin_reverse, summary_rna, "enhancer_heterochromatin")
+df_three_factor = rbind(df_three_factor, df_enhancer_heterochromatin)
 datatable(df_enhancer_heterochromatin)
 #promoter_heterochromatin
 ```
@@ -175,13 +181,17 @@ datatable(df_enhancer_heterochromatin)
 ### promoter and heterochromatin
 ```{r promoter and heterochromatin, echo = FALSE}
 df_promoter_heterochromatin = two_mark(summary_promoter, summary_heterochromatin_reverse, summary_rna, "promoter_heterochromatin")
+df_three_factor = rbind(df_three_factor, df_promoter_heterochromatin)
 datatable(df_promoter_heterochromatin)
 #repressed_heterochromatin
 ```
 
 ### repressed and heterochromatin
+repressed and heterochromatin 的交集是空，这样也就没有必要做四个marker的交集了。  
 ```{r repressed and heterochromatin, echo = FALSE}
 df_repressed_heterochromatin = two_mark(summary_repressed_verse, summary_heterochromatin_reverse, summary_rna, "repressed_heterochromatin")
+df_three_factor = rbind(df_three_factor, df_repressed_heterochromatin)
+write.table(df_three_factor, "/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/final_result/three_factor_table.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
 datatable(df_repressed_heterochromatin)
 ```
 
@@ -210,6 +220,7 @@ df_gwas = rbind(gwas_rna_df, gwas_enhancer_df)
 df_gwas = rbind(df_gwas, gwas_promoter_df)
 df_gwas = rbind(df_gwas, gwas_repressed_df)
 df_gwas = rbind(df_gwas, gwas_heterochromatin_df)
+write.table(df_gwas, "/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/final_result/GWAS_table.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
 datatable(df_gwas)
 
 ```
