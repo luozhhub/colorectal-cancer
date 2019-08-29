@@ -1,0 +1,257 @@
+---
+title: "step10_analysis"
+author: "luozhihui"
+date: "2019/8/27"
+output: 
+  html_document:
+    code_folding: show
+    highlight: haddock
+    keep_md: yes
+    number_sections: yes
+    theme: readable
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+      toc_depth: 3
+  pdf_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = FALSE)
+```
+
+## Load data
+First, we need to load R library, data file ,and R function  
+all related information in step9_DEG_chip_gene.R  
+
+```{r load related data, echo=FALSE, message = FALSE}
+source("step9_DEG_chip_gene.R")
+
+```
+
+##  Summary for RNA
+RNA differential expression genes number in each state.  
+分别列出了各个week，以及组合week的差异表达基因数量。  
+筛选的条件是：Pvalue < 0.01, log2(fold change) >1 或者 < -1.   
+Colits_2and4: 指2week 和 4week的交集。   
+Cancer_7and10： 指7week 和 10week的交集。   
+only_cancer：指Cancer_7and10 减去all_week的基因数目。   
+only_colits：指Colits_2and4 减去all_week的基因数目。     
+
+```{r RNA data, echo = FALSE}
+mark = ""
+state = ""
+summary_rna = Summary_data(mark, state, diff_gene_in_mouse, "RNA")
+summary_rna$total_table
+```
+
+## Summary for histone marker
+RNA differential expression genes number in each state.   
+分别列出了各个week，以及组合week的差异表达基因数量。  
+筛选的条件是：Pvalue < 0.01, log2(fold change) >1 或者 < -1.   
+
+**enhancer**
+```{r enhancer data, echo = FALSE}
+#read one mark
+mark = "H3K27ac"
+state = "enhancer"
+summary_enhancer = Summary_data(mark, state, diff_gene_for_chip, "Chip")
+summary_enhancer$total_table
+```
+
+**promoter**
+```{r promoter data, echo = FALSE}
+mark = "H3K4me3"
+state = "promoter"
+summary_promoter = Summary_data(mark, state, diff_gene_for_chip, "Chip")
+summary_promoter$total_table
+```
+
+**repressed**
+```{r repressed data, echo = FALSE}
+mark = "H3K27me3"
+state = "repressed"
+summary_repressed = Summary_data(mark, state, diff_gene_for_chip, "Chip")
+summary_repressed$total_table
+
+```
+
+**heterochromatin**
+```{r heterochromatin data, echo = FALSE}
+mark = "H3K9me3"
+state = "heterochromatin"
+summary_heterochromatin = Summary_data(mark, state, diff_gene_for_chip, "Chip")
+summary_heterochromatin$total_table
+```
+
+## enrichment between RNA and one histone mark
+筛选出各个week中，Pvalue < 0.01, log2(fold change) >1 或者 < -1.   的差异表达基因。  
+然后，将数据分成三个状态，cancer， colits， all  
+cancer表示：7week和10week取交集  
+colits表示：2week和4week取交集  
+all表示： 所有的week取交集  
+然后计算各个不同状态下的基因是否富集  
+
+
+这张表涉及到的列："marker", "shared_number", "RNA_number", "left_gene_number", "chip_gene_number",  "P_value"  
+marker: 一种histone marker   
+shared_number：RNA和一种histone marker，差异表达方向一致的基因数目。对于enhancer和promoter来说，差异表达方向与RNA相同，repressed和heterochromatin则相反   
+RNA_number：该状态下，RNA差异表达基因的数目     
+left_gene_number： 超几何检验的时候，用20000做背景数据集，这一列是20000 - RNA_number的值。    
+chip_gene_number： 该状态下，Chip 检测的差异表达的基因数目， 基因选择与该chip信号距离最近的基因    
+P_value： 超几何检验的P value    
+
+```{r, Hypergeometric test, echo = FALSE}
+data_enhancer = enrichment(summary_rna, summary_enhancer, "H3K27ac")
+data_enhancer
+data_promoter = enrichment(summary_rna, summary_promoter, "H3K4me3")
+data_promoter
+summary_repressed_verse = reverse_list(summary_repressed)
+data_repressed = enrichment(summary_rna, summary_repressed_verse, "H3K27me3")
+data_repressed
+summary_heterochromatin_reverse = reverse_list(summary_heterochromatin)
+data_heterochromatin = enrichment(summary_rna, summary_heterochromatin_reverse, "H3K9me3")
+data_heterochromatin
+
+```
+
+## two marker and RNA identity
+在这个部分，主要可以看两个histone信号一致的基因有哪些。   
+首先在不同的state下面，我们可以得到每种信号的差异表达基因有哪些。  
+然后我们在两种信号里面取交集，这样就可以看到两种信号一致的差异表达基因有哪些。  
+更进一步，表观信号的差异表达一致，还需要跟RNA的上下调做对应。  
+  
+
+
+marker的一致指的是：  
+enhancer 上调，promoter 上调， RNA上调  
+enhancer 上调，repressed 下调， RNA上调  
+enhancer 上调，heterochromatin 下调， RNA上调  
+promoter上调， repressed下调， RNA上调  
+promoter上调， heterochromatin下调， RNA上调  
+repressed下调，heterochromatin下调， RNA上调  
+这些都算一致，并且会在state状态里面标up，up指的是基因的表达上调了  
+反之也是一样  
+表格里的列名如下：two_mark, state, up_down, geneID, symbol, withRNA   
+two_mark：指的是哪两种histone marker在差异表达上是一致的。   
+state：有三个取值cancer（表示在7week 和 10week里取交集）， colits（表示在2week 和 4week 里取交集）， all（表示在所有的week里取交集）。   
+up_down：有两个取值up（表示基因表达上调的信号改变），down（表示会让基因表达下调的改变）。    
+geneID：ensembl ID  
+symbol：gene symbol  
+withRNA：true表示RNA的差异表达情况与表观信号差异表达一致，false表示两者不一致（有可能是RNA在这里差异表达方向相反，也可能是不差异表达）。  
+上次在ppt里展示的几个基因是按照：two_mark：enhancer_promoter， state：all， up_down：up和down都有， withRNA：true，挑选出来的。   
+
+### enhancer and promoter
+```{r 3 factor result, echo = FALSE}
+#print(length(down_enhancer_promoter))
+#enhancer_promoter
+df_enhancer_promoter = two_mark(summary_enhancer, summary_promoter, summary_rna, "enhancer_promoter")
+datatable(df_enhancer_promoter)
+#enhancer_repressed
+```
+
+### enhancer and repressed
+```{r enhancer and repressed, echo = FALSE}
+summary_repressed_verse = reverse_list(summary_repressed)
+df_enhancer_repressed = two_mark(summary_enhancer, summary_repressed_verse, summary_rna, "enhancer_repressed")
+df_three_factor = rbind(df_enhancer_promoter, df_enhancer_repressed)
+datatable(df_enhancer_repressed)
+#promoter_repreesed
+```
+
+### promoter and repreesed
+```{r promoter and repreesed, echo = FALSE}
+df_promoter_repressed = two_mark(summary_promoter, summary_repressed_verse, summary_rna, "promoter_repressed")
+df_three_factor = rbind(df_three_factor, df_promoter_repressed)
+datatable(df_promoter_repressed)
+#enhancer_heterochromatin
+```
+
+### enhancer and heterochromatin
+```{r enhancer and heterochromatin, echo = FALSE}
+summary_heterochromatin_reverse = reverse_list(summary_heterochromatin)
+df_enhancer_heterochromatin = two_mark(summary_enhancer, summary_heterochromatin_reverse, summary_rna, "enhancer_heterochromatin")
+df_three_factor = rbind(df_three_factor, df_enhancer_heterochromatin)
+datatable(df_enhancer_heterochromatin)
+#promoter_heterochromatin
+```
+
+### promoter and heterochromatin
+```{r promoter and heterochromatin, echo = FALSE}
+df_promoter_heterochromatin = two_mark(summary_promoter, summary_heterochromatin_reverse, summary_rna, "promoter_heterochromatin")
+df_three_factor = rbind(df_three_factor, df_promoter_heterochromatin)
+datatable(df_promoter_heterochromatin)
+#repressed_heterochromatin
+```
+
+### repressed and heterochromatin
+repressed and heterochromatin 的交集是空，这样也就没有必要做四个marker的交集了。  
+```{r repressed and heterochromatin, echo = FALSE}
+df_repressed_heterochromatin = two_mark(summary_repressed_verse, summary_heterochromatin_reverse, summary_rna, "repressed_heterochromatin")
+df_three_factor = rbind(df_three_factor, df_repressed_heterochromatin)
+write.table(df_three_factor, "/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/final_result/three_factor_table.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+datatable(df_repressed_heterochromatin)
+```
+
+
+## GWAS gene
+GWAS 的这张表主要的列有这些：GWAS, mark, state, up_down, geneID, symbol  
+GWAS: 表示这张表的核心信息是GWAS信息  
+mark：表示GWAS的gene跟什么信号有overlap  
+state：colits表示2week和4week的交集， cancer表示7week和10week的交集， all表示所有week的交集  
+up_down: 表示mark的上调和下调，GWAS里的gene是没有上下调信息的  
+mouseGeneID：mouse ensembl ID  
+mouseSymbol：mouse gene symbol  
+humanGeneID: human ensembl ID  
+humanSymbol: human gene symbol  
+  
+举一个例子，如何看这张表    
+比较有意思的一个基因：TTC22（研究很少），之前没有发现，他在colits时期，promoter就下调了。紧接着，在cancer时期，promoter和enhancer都下调了。这个基因有报道在结肠癌里面是RNA表达量下调的。 它对应的mouse的ensembl ID是ENSMUSG00000034919， 这个时候，去RNA表达的总表查看，我们会发现，2week~10week它的fold change是这样的：1.49736828906856， 0.746076670051349， -0.452608167736595， -0.420668045876659。基本是一个下调的趋势。  
+那么可以这样认为：在炎症的时候，该基因会显著上调表达，但是在炎癌转化过程中，这个基因的promoter首先发生改变下调，随后promoter也发生改变下调。最后在癌症中这个基因变成表达下调的基因了。  
+```{r GWAS data, echo = FALSE}
+gwas_rna_df = gwas_gene(summary_rna, "rna")
+gwas_enhancer_df = gwas_gene(summary_enhancer, "enhancer")
+gwas_promoter_df = gwas_gene(summary_promoter, "promoter")
+gwas_repressed_df = gwas_gene(summary_repressed, "repressed")
+gwas_heterochromatin_df = gwas_gene(summary_heterochromatin, "heterochromatin")
+df_gwas = rbind(gwas_rna_df, gwas_enhancer_df)
+df_gwas = rbind(df_gwas, gwas_promoter_df)
+df_gwas = rbind(df_gwas, gwas_repressed_df)
+df_gwas = rbind(df_gwas, gwas_heterochromatin_df)
+write.table(df_gwas, "/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/final_result/GWAS_table.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+datatable(df_gwas)
+
+```
+
+## cmap
+得到这张表的方法是：  
+首先在RNA 差异表达的总表里面找到：tumorVSctrl的列，选择pvalue  <0.01的gene，并用他们的fold change排序。  
+然后将小鼠的基因转换为人直系同源基因。将排序最前面和最后面的各200个基因，输入到CMap的web服务接口。  
+然后得到富集到的相应的药物，表格参见：permutedResults173354.xls  
+```{r cmap data, echo = FALSE, message = FALSE}
+df_all = read.delim("/home/zhihl/Project/CRC/RNA_analysis/all_diff_data.txt",sep = "\t", header=T)
+col_1 = "log2FoldChange.tumorVSctrl"
+col_2 = "padj.tumorVSctrl"
+week_df = df_all[,c(col_1, col_2)]
+cancer_df = week_df[week_df$padj.tumorVSctrl < 0.01,]
+can_df = cancer_df[order(cancer_df$log2FoldChange.tumorVSctrl),]
+cols <- c("SYMBOL", "ENTREZID", "ENSEMBL")
+symbol = AnnotationDbi::select(org.Hs.eg.db, keys=as.vector(mouse2human(row.names(head(can_df, 400)))), columns=cols, keytype="ENSEMBL")
+up_gene = symbol[,"SYMBOL"]
+#write.table(up_gene , "cancer_up.txt", sep="\n", quote=F, row.names=F, col.names = F, na="NA", eol="\n")
+symbol = AnnotationDbi::select(org.Hs.eg.db, keys=as.vector(mouse2human(row.names(tail(can_df, 400)))), columns=cols, keytype="ENSEMBL")
+down_gene = symbol[,"SYMBOL"]
+#write.table(down_gene , "cancer_down.txt", sep="\n", quote=F, row.names=F, col.names = F, na="NA", eol="\n")
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+#plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

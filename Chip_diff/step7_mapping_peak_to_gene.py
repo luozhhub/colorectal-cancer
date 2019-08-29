@@ -28,18 +28,22 @@ def mapping_gene_name_to_peak():
         new_df = pd.DataFrame(columns=peak_file.columns)
         
         for index,row in peak_file.iterrows():
-            chrom = row["chr"]
-            middle = int(row["middle"])
-            gene_chr_df = copy.deepcopy(gene_anno[gene_anno["chr"] == chrom])
-            gene_chr_df["middle"] = middle
-            #print(gene_chr_df.head())           
-            gene_chr_df["devi"] = gene_chr_df["middle"] - gene_chr_df["tss"]
-            gene_chr_df["devi"] = np.abs(gene_chr_df["devi"])
-            idx = gene_chr_df["devi"].idxmin()
-            gene_id = gene_chr_df.loc[idx,"gene_id"]
-            row["gene_id"] = gene_id.split(".")[0]
-            new_df = new_df.append(row)
-            print(row)
+            try:
+                chrom = row["chr"]
+                middle = int(row["middle"])
+                gene_chr_df = copy.deepcopy(gene_anno[gene_anno["chr"] == chrom])
+                gene_chr_df["middle"] = middle
+                #print(gene_chr_df.head())           
+                gene_chr_df["devi"] = gene_chr_df["middle"] - gene_chr_df["tss"]
+                gene_chr_df["devi"] = np.abs(gene_chr_df["devi"])
+                idx = gene_chr_df["devi"].idxmin()
+                gene_id = gene_chr_df.loc[idx,"gene_id"]
+                row["gene_id"] = gene_id.split(".")[0]
+                new_df = new_df.append(row)
+                #print(row)
+            except:
+                continue
+                
         new_df.to_csv(output_file, sep="\t", index=0)
         
 if __name__ == "__main__":
