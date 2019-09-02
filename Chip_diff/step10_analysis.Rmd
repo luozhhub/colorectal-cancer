@@ -3,6 +3,8 @@ title: "step10_analysis"
 author: "luozhihui"
 date: "2019/8/27"
 output: 
+  pdf_document:
+    toc: yes
   html_document:
     code_folding: show
     highlight: haddock
@@ -14,8 +16,6 @@ output:
       collapsed: no
       smooth_scroll: yes
       toc_depth: 3
-  pdf_document:
-    toc: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -23,8 +23,9 @@ knitr::opts_chunk$set(echo = TRUE, cache = FALSE)
 ```
 
 ## Load data
-First, we need to load R library, data file ,and R function  
-all related information in step9_DEG_chip_gene.R  
+First, we need to load R library, data file ,and R function.   
+all related information in step9_DEG_chip_gene.R and step10_analysis.Rmd.   
+
 
 ```{r load related data, echo=FALSE, message = FALSE}
 source("step9_DEG_chip_gene.R")
@@ -48,7 +49,7 @@ summary_rna$total_table
 ```
 
 ## Summary for histone marker
-RNA differential expression genes number in each state.   
+Chip differential expression genes number in each state.   
 分别列出了各个week，以及组合week的差异表达基因数量。  
 筛选的条件是：Pvalue < 0.01, log2(fold change) >1 或者 < -1.   
 
@@ -187,7 +188,7 @@ datatable(df_promoter_heterochromatin)
 ```
 
 ### repressed and heterochromatin
-repressed and heterochromatin 的交集是空，这样也就没有必要做四个marker的交集了。  
+repressed and heterochromatin 的交集是空，这样也就没有必要做四个marker的交集了。   
 ```{r repressed and heterochromatin, echo = FALSE}
 df_repressed_heterochromatin = two_mark(summary_repressed_verse, summary_heterochromatin_reverse, summary_rna, "repressed_heterochromatin")
 df_three_factor = rbind(df_three_factor, df_repressed_heterochromatin)
@@ -208,7 +209,7 @@ humanGeneID: human ensembl ID
 humanSymbol: human gene symbol  
   
 举一个例子，如何看这张表    
-比较有意思的一个基因：TTC22（研究很少），之前没有发现，他在colits时期，promoter就下调了。紧接着，在cancer时期，promoter和enhancer都下调了。这个基因有报道在结肠癌里面是RNA表达量下调的。 它对应的mouse的ensembl ID是ENSMUSG00000034919， 这个时候，去RNA表达的总表查看，我们会发现，2week~10week它的fold change是这样的：1.49736828906856， 0.746076670051349， -0.452608167736595， -0.420668045876659。基本是一个下调的趋势。  
+比较有意思的一个基因：TTC22（研究很少），之前没有发现，他在colits时期，promoter就下调了。紧接着，在cancer时期，promoter和enhancer都下调了。这个基因有报道在结肠癌里面是RNA表达量下调的。 它对应的mouse的ensembl ID是ENSMUSG00000034919， 这个时候，去RNA表达的总表查看，我们会发现，2week~10week它的fold change是这样的：1.49736828906856， 0.746076670051349， -0.452608167736595， -0.420668045876659。虽然在7week和10week的差异表达不显著，但基本是一个下调的趋势。     
 那么可以这样认为：在炎症的时候，该基因会显著上调表达，但是在炎癌转化过程中，这个基因的promoter首先发生改变下调，随后promoter也发生改变下调。最后在癌症中这个基因变成表达下调的基因了。  
 ```{r GWAS data, echo = FALSE}
 gwas_rna_df = gwas_gene(summary_rna, "rna")
