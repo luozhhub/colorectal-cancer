@@ -3,8 +3,6 @@ title: "step10_analysis"
 author: "luozhihui"
 date: "2019/8/27"
 output: 
-  pdf_document:
-    toc: yes
   html_document:
     code_folding: show
     highlight: haddock
@@ -16,6 +14,8 @@ output:
       collapsed: no
       smooth_scroll: yes
       toc_depth: 3
+  pdf_document:
+    toc: yes
 ---
 
 ```{r setup, include=FALSE}
