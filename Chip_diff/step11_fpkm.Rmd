@@ -1,0 +1,100 @@
+---
+title: "fpkm"
+author: "luozhihui"
+date: "2019/9/10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+## Read FPKM data
+```{r fpkm mean, echo=FALSE}
+fpkm = read.delim("/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/final_result/genes.fpkm_table", sep="\t", header=T)
+fpkm_df = data.frame(ctrl = apply(fpkm[,2:4], 1, mean), week2=apply(fpkm[,5:7], 1, mean), week4=apply(fpkm[,8:10], 1, mean), week7=apply(fpkm[,11:13], 1, mean), week10=apply(fpkm[,14:16], 1, mean))
+rownames(fpkm_df) = fpkm$tracking_id
+head(fpkm_df, 10)
+```
+
+
+## Target gene
+我们可以根据NFkB的chip-seq数据获得它的target gene，然后根据它的target 基因。
+
+```{r NFkB target genes, echo=FALSE}
+target_df = read.delim("/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/final_result/target_gene/42251_gene_score_5fold.txt", sep="\t", header=F, comment.char = "#" )
+colnames(target_df) = c("chr", "start", "end", "refseq", "score", "strand", "symbol")
+head(target_df, 10)
+gene_list = target_df[,"symbol"][1:200]
+head(gene_list, 10)
+
+gene_detail = read.delim("/home/zhihl/Project/CRC/RNA_analysis/mart_export_mouse_geneid_symbol.txt", sep="\t", header=T)
+symbol_to_ensembl = function(symbol_list, name){
+  if (name == "mouse")
+  {ensembl = gene_detail[match(symbol_list, gene_detail$external_gene_name),"ensembl_gene_id"]}
+  if (name == "human")
+  {ensembl = human_gene_detail[match(symbol_list, human_gene_detail$external_gene_name),"ensembl_gene_id"]}
+  return(as.vector(ensembl)) 
+}
+
+gene_list_ensembl = symbol_to_ensembl(gene_list, "mouse")
+#print(gene_list)
+ensembl_list = unique(na.omit(gene_list_ensembl))
+
+
+```
+
+##select peak for one example
+
+```{r select peak, echo=FALSE}
+H3K27ac_df = read.delim("/home/zhihl/Project/CRC/Chip_analysis/peak_dir_0821/enhancer/enhancer.peak.unique.ID.gene_name.bed", sep="\t", header=T, comment.char = "#" )
+head(H3K27ac_df, 10)
+selected_peak_df = na.omit(H3K27ac_df[match(ensembl_list, H3K27ac_df$gene_id), c("chr", "start", "end", "ID")])
+selected_peak_df["score"] = rep(1000, nrow(selected_peak_df))
+selected_peak_df["strand"] = rep("+", nrow(selected_peak_df))
+selected_peak_df
+write.table(selected_peak_df, "/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/final_result/target_gene/42251_result.bed", sep="\t", quote=F, row.names=F, col.names = F, na="NA", eol="\n")
+
+```
+
+## cistrome file
+```{r select cistrome mouse peak file, echo=FALSE}
+file_dir = "/home/zhihl/Project/ZNF_database/cistrome/mouse_factor.txt"
+file_list_df = read.delim(file_dir, sep="\t", header=T)
+#head(file_list_df, 10)
+
+RELA_df = file_list_df[file_list_df$Factor == "RELA", ]
+print(nrow(RELA_df))
+write.table(RELA_df, "/home/zhihl/Project/ZNF_database/cistrome/mouse_bed/RELA_df.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+#file_dir_path = "/home/zhihl/Project/ZNF_database/cistrome/mouse_bed/mouse_factor/"
+```
+
+##select peak
+
+```{r select peak, echo=FALSE}
+ensembl_df = read.delim("/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/final_result/target_gene/gene_numebr.txt", sep="\t", header=T)
+ensembl_list = ensembl_df$gene_name[0:2000]
+H3K27ac_df = read.delim("/home/zhihl/Project/CRC/Chip_analysis/peak_dir_0821/enhancer/enhancer.peak.unique.ID.gene_name.bed", sep="\t", header=T, comment.char = "#" )
+head(H3K27ac_df, 10)
+selected_peak_df = na.omit(H3K27ac_df[match(ensembl_list, H3K27ac_df$gene_id), c("chr", "start", "end", "ID")])
+selected_peak_df["score"] = rep(1000, nrow(selected_peak_df))
+selected_peak_df["strand"] = rep("+", nrow(selected_peak_df))
+selected_peak_df
+write.table(selected_peak_df, "/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/final_result/target_gene/whole_result_2000gene.bed", sep="\t", quote=F, row.names=F, col.names = F, na="NA", eol="\n")
+
+```
+
+
+## find same profile with NFkB
+```{r NFkB, echo=FALSE}
+#Rela :ENSMUSG00000024927
+df_all = read.delim("/home/zhihl/Project/CRC/RNA_analysis/all_diff_data.txt",sep = "\t", header=T)
+diff_genes_10w = diff_gene_func(df_all, "log2FoldChange.10wkVSctrl", "padj.10wkVSctrl", 1, "ENSEMBL")
+diff_genes_7w = diff_gene_func(df_all, "log2FoldChange.7wkVSctrl", "padj.7wkVSctrl", 1, "ENSEMBL")
+diff_genes_4w = diff_gene_func(df_all, "log2FoldChange.4wkVSctrl", "padj.4wkVSctrl", 1, "ENSEMBL")
+diff_genes_2w = diff_gene_func(df_all, "log2FoldChange.2wkVSctrl", "padj.2wkVSctrl", 1, "ENSEMBL")
+
+
+```
