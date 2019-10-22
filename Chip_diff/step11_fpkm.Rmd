@@ -98,3 +98,67 @@ diff_genes_2w = diff_gene_func(df_all, "log2FoldChange.2wkVSctrl", "padj.2wkVSct
 
 
 ```
+
+#test
+```{r h3k27ac, echo=FALSE}
+#source("step9_DEG_chip_gene.R")
+df_all = read.delim("/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/all_diff_data_H3K27ac.txt",sep = "\t", header=T)
+state = "enhancer"
+peak_gene = paste("/home/zhihl/Project/CRC/Chip_analysis/peak_dir_0821/", state, "/", state, ".peak.unique.ID.gene_name.bed", sep="")
+
+diff_genes_10w = diff_gene_for_chip(df_all, "log2FoldChange.10wkVSctrl", "padj.10wkVSctrl", 1, "ENSEMBL", peak_gene)
+diff_genes_7w = diff_gene_for_chip(df_all, "log2FoldChange.7wkVSctrl", "padj.7wkVSctrl", 1, "ENSEMBL", peak_gene)
+diff_genes_4w = diff_gene_for_chip(df_all, "log2FoldChange.4wkVSctrl", "padj.4wkVSctrl", 1, "ENSEMBL", peak_gene)
+diff_genes_2w = diff_gene_for_chip(df_all, "log2FoldChange.2wkVSctrl", "padj.2wkVSctrl", 1, "ENSEMBL", peak_gene)
+
+total_H3K27ac_cancer = c(as.vector(diff_genes_10w[[1]]), as.vector(diff_genes_10w[[2]]), as.vector(diff_genes_7w[[1]]), as.vector(diff_genes_7w[[2]]))
+
+total_H3K27ac_colits = c(as.vector(diff_genes_4w[[1]]), as.vector(diff_genes_4w[[2]]), as.vector(diff_genes_2w[[1]]), as.vector(diff_genes_2w[[2]]))
+total_H3K27ac_cancer = unique(total_H3K27ac_cancer)
+total_H3K27ac_colits = unique(total_H3K27ac_colits)
+
+
+df_all = read.delim("/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/all_diff_data_H3K27me3.txt",sep = "\t", header=T)
+state = "repressed"
+peak_gene = paste("/home/zhihl/Project/CRC/Chip_analysis/peak_dir_0821/", state, "/", state, ".peak.unique.ID.gene_name.bed", sep="")
+
+diff_genes_10w = diff_gene_for_chip(df_all, "log2FoldChange.10wkVSctrl", "padj.10wkVSctrl", 1, "ENSEMBL", peak_gene)
+diff_genes_7w = diff_gene_for_chip(df_all, "log2FoldChange.7wkVSctrl", "padj.7wkVSctrl", 1, "ENSEMBL", peak_gene)
+diff_genes_4w = diff_gene_for_chip(df_all, "log2FoldChange.4wkVSctrl", "padj.4wkVSctrl", 1, "ENSEMBL", peak_gene)
+diff_genes_2w = diff_gene_for_chip(df_all, "log2FoldChange.2wkVSctrl", "padj.2wkVSctrl", 1, "ENSEMBL", peak_gene)
+
+total_H3K27me3 = c(as.vector(diff_genes_10w[[1]]), as.vector(diff_genes_10w[[2]]), as.vector(diff_genes_7w[[1]]), as.vector(diff_genes_7w[[2]]), as.vector(diff_genes_4w[[1]]), as.vector(diff_genes_4w[[2]]), as.vector(diff_genes_2w[[1]]), as.vector(diff_genes_2w[[2]]))
+total_H3K27me3 = unique(total_H3K27me3)
+
+df_all = read.delim("/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/all_diff_data_H3K4me3.txt",sep = "\t", header=T)
+state = "promoter"
+peak_gene = paste("/home/zhihl/Project/CRC/Chip_analysis/peak_dir_0821/", state, "/", state, ".peak.unique.ID.gene_name.bed", sep="")
+
+diff_genes_10w = diff_gene_for_chip(df_all, "log2FoldChange.10wkVSctrl", "padj.10wkVSctrl", 1, "ENSEMBL", peak_gene)
+diff_genes_7w = diff_gene_for_chip(df_all, "log2FoldChange.7wkVSctrl", "padj.7wkVSctrl", 1, "ENSEMBL", peak_gene)
+diff_genes_4w = diff_gene_for_chip(df_all, "log2FoldChange.4wkVSctrl", "padj.4wkVSctrl", 1, "ENSEMBL", peak_gene)
+diff_genes_2w = diff_gene_for_chip(df_all, "log2FoldChange.2wkVSctrl", "padj.2wkVSctrl", 1, "ENSEMBL", peak_gene)
+
+total_H3K4me3 = c(as.vector(diff_genes_10w[[1]]), as.vector(diff_genes_10w[[2]]), as.vector(diff_genes_7w[[1]]), as.vector(diff_genes_7w[[2]]), as.vector(diff_genes_4w[[1]]), as.vector(diff_genes_4w[[2]]), as.vector(diff_genes_2w[[1]]), as.vector(diff_genes_2w[[2]]))
+total_H3K4me3 = unique(total_H3K4me3)
+
+
+
+df_all = read.delim("/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/all_diff_data_H3K9me3.txt",sep = "\t", header=T)
+state = "heterochromatin"
+peak_gene = paste("/home/zhihl/Project/CRC/Chip_analysis/peak_dir_0821/", state, "/", state, ".peak.unique.ID.gene_name.bed", sep="")
+
+diff_genes_10w = diff_gene_for_chip(df_all, "log2FoldChange.10wkVSctrl", "padj.10wkVSctrl", 1, "ENSEMBL", peak_gene)
+diff_genes_7w = diff_gene_for_chip(df_all, "log2FoldChange.7wkVSctrl", "padj.7wkVSctrl", 1, "ENSEMBL", peak_gene)
+diff_genes_4w = diff_gene_for_chip(df_all, "log2FoldChange.4wkVSctrl", "padj.4wkVSctrl", 1, "ENSEMBL", peak_gene)
+diff_genes_2w = diff_gene_for_chip(df_all, "log2FoldChange.2wkVSctrl", "padj.2wkVSctrl", 1, "ENSEMBL", peak_gene)
+
+total_H3K9me3 = c(as.vector(diff_genes_10w[[1]]), as.vector(diff_genes_10w[[2]]), as.vector(diff_genes_7w[[1]]), as.vector(diff_genes_7w[[2]]), as.vector(diff_genes_4w[[1]]), as.vector(diff_genes_4w[[2]]), as.vector(diff_genes_2w[[1]]), as.vector(diff_genes_2w[[2]]))
+total_H3K9me3 = unique(total_H3K9me3)
+
+
+length(total_H3K27me3)
+length(total_H3K4me3)
+length(total_H3K9me3)
+
+```

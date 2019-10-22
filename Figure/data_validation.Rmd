@@ -1,0 +1,337 @@
+---
+title: "draw_Figure"
+author: "luozhihui"
+date: "2019/10/21"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## pre-processing
+
+Data pre-processing  
+
+```{r lib, echo=FALSE}
+
+orthologs_table = read.delim("/home/zhihl/Project/CRC/RNA_analysis/mart_export_humanGene_mouseGene.txt", sep="\t", header=T)
+gene_detail = read.delim("/home/zhihl/Project/CRC/RNA_analysis/mart_export_mouse_geneid_symbol.txt", sep="\t", header=T)
+human_gene_detail = read.delim("/home/zhihl/Project/CRC/RNA_analysis/mart_export_human_geneid_symbol.txt", sep="\t", header=T)
+
+mouse2human = function(deg_list){
+  orthologs = orthologs_table
+  ind = match(deg_list, orthologs$Mouse.gene.stable.ID)
+  human_genes = orthologs[ind,]
+  gene_list = unique(na.omit(human_genes[,1]))
+  return(gene_list)
+}
+
+ensembl_to_symbol = function(ensemble_list, name){
+  if (name == "mouse")
+  {symbol = gene_detail[match(ensemble_list, gene_detail$ensembl_gene_id),"external_gene_name"]}
+  if (name == "human")
+  {symbol = human_gene_detail[match(ensemble_list, human_gene_detail$ensembl_gene_id),"external_gene_name"]}
+  return(as.vector(symbol)) 
+}
+
+
+## calculate mouse orthologs in human
+df_all = read.delim("/home/zhihl/Project/CRC/RNA_analysis/all_diff_data.txt",sep = "\t", header=T)
+all_mouse_gene = rownames(df_all)
+human_genes = mouse2human(all_mouse_gene)
+human_symbol=ensembl_to_symbol(human_genes, "human")
+length(human_symbol)
+
+diff_gene = function(col_1, col_2, fold_change=2 ,id_type="SYMBOL"){
+  #col_1: col name of log2 fold change
+  #col_2: col name of padj
+  #fold_change: log2 fold change
+  #id_type: "SYMBOL", "ENTRIZEID" ....
+  #return list of up and down genes
+  
+  week_df = df_all[,c(col_1, col_2)]
+  diff_week_up = rownames(na.omit(week_df[week_df[,1] > fold_change & week_df[,2] < 0.01, ]))
+  diff_week_down = rownames(na.omit(week_df[week_df[,1] < -(fold_change) & week_df[,2] < 0.01, ]))
+  down_gene = mouse2human(diff_week_down)
+  up_gene = mouse2human(diff_week_up)
+  
+  up_symbol=ensembl_to_symbol(up_gene, "human")
+  up_list = unique(up_symbol)
+  down_symbol = ensembl_to_symbol(down_gene, "human")
+  down_list = unique(down_symbol)
+  return (list(up_list, down_list))
+}
+
+diff_genes_10w = diff_gene(col_1 = "log2FoldChange.10wkVSctrl", col_2 = "padj.10wkVSctrl")
+diff_genes_7w = diff_gene(col_1 = "log2FoldChange.7wkVSctrl", col_2 = "padj.7wkVSctrl")
+diff_genes_4w = diff_gene(col_1 = "log2FoldChange.4wkVSctrl", col_2 = "padj.4wkVSctrl")
+diff_genes_2w = diff_gene(col_1 = "log2FoldChange.2wkVSctrl", col_2 = "padj.2wkVSctrl")
+
+# divide groups
+commom_cancer_up = intersect(diff_genes_10w[[1]], diff_genes_7w[[1]])
+commom_cancer_down = intersect(diff_genes_10w[[2]], diff_genes_7w[[2]])
+
+
+commom_colits_up = intersect(diff_genes_4w[[1]], diff_genes_2w[[1]])
+commom_colits_down = intersect(diff_genes_4w[[2]], diff_genes_2w[[2]])
+
+commom_all_up = intersect(commom_cancer_up, commom_colits_up)
+commom_all_down = intersect(commom_cancer_down, commom_colits_down)
+
+
+commom_col_list = list(commom_colits_up, commom_colits_down)
+commom_can_list = list(commom_cancer_up, commom_cancer_down)
+commom_all_list = list(commom_all_up, commom_all_down)
+
+```
+
+## Including Plots
+
+total orthologs in variable: human_symbol  
+change the threshold， the result will be different  
+such as：  
+data_1 = data_all[data_all[, x[1]] > 1 & data_all[, x[2]] < 0.01,]  
+data_1 = data_all[data_all[, x[1]] < -1 & data_all[,x[2]] < 0.01,]  
+
+输出的数据分别是： RNA-seq跟subtype交集的基因数目， subtype基因数目， 14728-subtype基因数目， RNA-seq鉴定的基因的数目, P value
+
+
+
+```{r pressure, echo=FALSE}
+f_intersect = function (x, diff_genes_w){
+  p_value = c()
+  
+  data_all = read.delim("/home/zhihl/Project/CRC/RNA_analysis/reference_diff_gene_paper1/paper3/data.txt",sep = "\t", header=T)
+  total_gene = 14728
+  data_1 = data_all[data_all[, x[1]] > 0 & data_all[, x[2]] < 0.05,]
+  up_list = unique(intersect(as.vector(data_1$Gene.Symbol), human_symbol))
+  #print(up_list)
+  data_1 = data_all[data_all[, x[1]] < 0 & data_all[,x[2]] < 0.05,]
+  down_list = unique(intersect(as.vector(data_1$Gene.Symbol), human_symbol))
+  
+  print("up gene overlap:")
+  commom = intersect(diff_genes_w[[1]], up_list)
+  #print(commom)
+  #hypergenomic test
+  pValue = phyper(length(commom), length(up_list), 14728 - length(up_list), length(diff_genes_w[[1]]), lower.tail = F)
+  p_value = c(p_value, pValue)
+  print(paste(x[1], "up", length(commom), length(up_list), 14728 - length(up_list), length(diff_genes_w[[1]]), pValue, sep=","))
+  
+  print("down gene overlap:")
+  commom = intersect(diff_genes_w[[2]], down_list)
+  #print(commom)
+  #hypergenomic test
+  pValue = phyper(length(commom), length(down_list), 14728 - length(down_list), length(diff_genes_w[[2]]), lower.tail = F)
+  p_value = c(p_value, pValue)
+  print(paste(x[2], "down", length(commom), length(down_list), 14728 - length(down_list), length(diff_genes_w[[2]]), pValue, sep=","))
+  
+  #return
+  return(p_value)
+}
+
+paper3_analysis = function(diff_genes_w){
+  data_all = read.delim("/home/zhihl/Project/CRC/RNA_analysis/reference_diff_gene_paper1/paper3/data.txt",sep = "\t", header=T)
+  select_subtype_columns = c("logFC.C1vsCx", "logFC.C2vsCx", "logFC.C3vsCx", "logFC.C4vsCx", "logFC.C5vsCx", "logFC.C6vsCx")
+  select_adj_columns = c("adjpv.C1vsCx", "adjpv.C2vsCx", "adjpv.C3vsCx", "adjpv.C4vsCx", "adjpv.C5vsCx", "adjpv.C6vsCx")
+  select_frame = data.frame(logFC = select_subtype_columns, adjPv = select_adj_columns)
+  result = apply(select_frame, 1, f_intersect, diff_genes_w)
+  return (result)
+}
+
+print("10 week")
+result_10w = paper3_analysis(diff_genes_w = diff_genes_10w)
+print("7 week")
+result_7w = paper3_analysis(diff_genes_w = diff_genes_7w)
+print("4 week")
+result_4w = paper3_analysis(diff_genes_w = diff_genes_4w)
+print("2 week")
+result_2w = paper3_analysis(diff_genes_w = diff_genes_2w)
+
+print("all week")
+result_all = paper3_analysis(diff_genes_w = commom_all_list)
+print("cancer week")
+result_can = paper3_analysis(diff_genes_w = commom_can_list)
+print("colits week")
+result_col = paper3_analysis(diff_genes_w = commom_col_list)
+
+```
+
+##draw histgram in every week
+The p_value is -log10 transverted.    
+the total ortholog gene number is 14728  
+这里的ortholog gene number是RNA-seq的所有小鼠基因成功转化成人的基因的数目  
+**up regulate gene**
+```{r draw enrichment, echo=FALSE}
+library("ggplot2")
+#up
+df_up = data.frame(matrix(vector(),24, 3,
+                dimnames=list(c(), c("Week", "class", "P_value"))),
+                stringsAsFactors=F)
+df_up$Week = c(rep("Week10", 6), rep("Week7", 6),rep("Week4", 6),rep("Week2", 6))
+df_up$class = c(paste("C", 1:6, sep=""), paste("C", 1:6, sep=""), paste("C", 1:6, sep=""), paste("C", 1:6, sep=""))
+df_up$P_value = c(result_10w[1,1:6], result_7w[1,1:6], result_4w[1,1:6], result_2w[1,1:6])
+df_up$P_value = round(-log10(df_up$P_value),1)
+df_up$Week = factor(df_up$Week, levels=c("Week10" ,"Week7", "Week4", "Week2"))
+ggplot(df_up, aes(x=class, y=P_value, fill=Week)) +
+  ggtitle("Up regulated genes") +
+  geom_text(aes(x=class, y=P_value, label=P_value, vjust = -1.5), position=position_dodge(.9), size=3) +
+  geom_bar(stat = "identity", position = "dodge") 
+  
+
+
+```
+
+**down regulate gene**
+```{r down regulate gene, echo = FALSE}
+
+
+
+#down
+df_down = data.frame(matrix(vector(),24, 3,
+                dimnames=list(c(), c("Week", "class", "P_value"))),
+                stringsAsFactors=F)
+df_down$Week = c(rep("Week10", "6"), rep("Week7", "6"),rep("Week4", "6"),rep("Week2", "6"))
+df_down$class = c(paste("C", 1:6, sep=""), paste("C", 1:6, sep=""), paste("C", 1:6, sep=""), paste("C", 1:6, sep=""))
+df_down$P_value = c(result_10w[2,1:6], result_7w[2,1:6], result_4w[2,1:6], result_2w[2,1:6])
+df_down$P_value = -log10(df_down$P_value)
+df_down$Week = factor(df_down$Week, levels=c("Week10" ,"Week7", "Week4", "Week2"))
+ggplot(df_down, aes(x=class, y=P_value, fill=Week)) +
+  ggtitle("Down regulated genes") +
+geom_bar(stat = "identity", position = "dodge")
+
+```
+##draw histgram in group
+"cancer": 2 和 4 week的交集
+"colits": 7 和 10 week的交集  
+"all": 所有week的交集
+
+**up regulate gene**
+```{r group, echo=FALSE}
+
+df_up = data.frame(matrix(vector(),18, 3,
+                dimnames=list(c(), c("Week", "class", "P_value"))),
+                stringsAsFactors=F)
+
+df_up$Week = c(rep("all", 6), rep("cancer", 6),rep("colits", 6))
+df_up$class = c(paste("C", 1:6, sep=""), paste("C", 1:6, sep=""), paste("C", 1:6, sep=""))
+df_up$P_value = c(result_all[1,1:6], result_can[1,1:6], result_col[1,1:6])
+df_up$P_value = -log10(df_up$P_value)
+df_up$Week = factor(df_up$Week, levels=c("all" ,"cancer", "colits"))
+ggplot(df_up, aes(x=class, y=P_value, fill=Week)) +
+  ggtitle("Up regulated genes") +
+  geom_bar(stat = "identity", position = "dodge")
+
+```
+
+**down regulate gene**
+```{r down gene, echo=FALSE}
+
+df_down = data.frame(matrix(vector(),18, 3,
+                dimnames=list(c(), c("Week", "class", "P_value"))),
+                stringsAsFactors=F)
+
+df_down$Week = c(rep("all", 6), rep("cancer", 6),rep("colits", 6))
+df_down$class = c(paste("C", 1:6, sep=""), paste("C", 1:6, sep=""), paste("C", 1:6, sep=""))
+df_down$P_value = c(result_all[2,1:6], result_can[2,1:6], result_col[2,1:6])
+df_down$P_value = -log10(df_down$P_value)
+df_down$Week = factor(df_down$Week, levels=c("all" ,"cancer", "colits"))
+ggplot(df_down, aes(x=class, y=P_value, fill=Week)) +
+  ggtitle("Down regulated genes") +
+  geom_bar(stat = "identity", position = "dodge")
+```
+
+
+##draw mouse data validation
+
+**preprocess**
+```{r mouse data, echo=FALSE}
+
+diff_gene_in_mouse = function(col_1 = "log2FoldChange.10wkVSctrl", col_2 = "padj.10wkVSctrl", fold_change=1 ,id_type="SYMBOL"){
+  #col_1: col name of log2 fold change
+  #col_2: col name of padj
+  #fold_change: log2 fold change
+  #id_type: "SYMBOL", "ENTRIZEID", "ENSEMBL" ....
+  #return list of up and down genes
+  
+  week_df = df_all[,c(col_1, col_2)]
+  diff_week_up = rownames(na.omit(week_df[week_df[,1] > fold_change & week_df[,2] < 0.01, ]))
+  diff_week_down = rownames(na.omit(week_df[week_df[,1] < -(fold_change) & week_df[,2] < 0.01, ]))
+  #return (list( unique(diff_week_up), unique(diff_week_down)))
+  
+  
+  up_symbol = ensembl_to_symbol(as.vector(diff_week_up), "mouse")
+  
+  down_symbol = ensembl_to_symbol(as.vector(diff_week_down), "mouse")
+  
+  return (list(up_symbol, down_symbol))
+}
+
+diff_genes_10w = diff_gene_in_mouse("log2FoldChange.10wkVSctrl", "padj.10wkVSctrl")
+diff_genes_7w = diff_gene_in_mouse("log2FoldChange.7wkVSctrl", "padj.7wkVSctrl")
+diff_genes_4w = diff_gene_in_mouse("log2FoldChange.4wkVSctrl", "padj.4wkVSctrl")
+diff_genes_2w = diff_gene_in_mouse("log2FoldChange.2wkVSctrl", "padj.2wkVSctrl")
+
+
+all_mouse_gene = ensembl_to_symbol(rownames(df_all), "mouse")
+p_data = read.delim("/home/zhihl/Project/CRC/RNA_analysis/reference_diff_gene_paper1/mouse_paper1/data.txt", sep = "\t", header=T)
+all_paper_gene = unique(p_data$Gene.Symbol)
+total_shared_gene = intersect(all_mouse_gene, all_paper_gene)
+length(intersect(all_mouse_gene, all_paper_gene))
+
+```
+## enrichment with mouse data
+mouse total gene: 13864  
+mouse RNA-seq gene: 19731  
+gene used to enrichment: 9144  
+
+```{r drawing, echo=FALSE}
+paper8_analysis = function(list_of_genes ){
+  p_value = c()
+  p_data = read.delim("/home/zhihl/Project/CRC/RNA_analysis/reference_diff_gene_paper1/mouse_paper1/data.txt", sep = "\t", header=T)
+  whole_genes = unique(intersect(list_of_genes[[1]], total_shared_gene))
+  genes_type1 = unique(p_data$Gene.Symbol[p_data$correctedPvalue..sporCRC..Vs..sporCRC.contr.. < 0.01 & p_data$regulation..sporCRC..Vs..sporCRC.contr.. == "up"])
+  #genes_type1 = unique(p_data$Gene.Symbol[p_data$correctedPvalue..CAC..Vs..CAC.contr.. < 0.01 & p_data$regulation..CAC..Vs..CAC.contr.. == "up"])
+  genes_type1 = intersect(genes_type1, total_shared_gene)
+  commom = intersect(whole_genes, genes_type1)
+  pValue = phyper(length(commom), length(genes_type1), 9144 - length(genes_type1), length(whole_genes), lower.tail = F)
+  print(paste("up", length(commom), length(genes_type1), 9144 - length(genes_type1), length(whole_genes), pValue, sep=","))
+  p_value = c(p_value, pValue)
+  
+  whole_genes = unique(intersect(list_of_genes[[2]], total_shared_gene))
+  genes_type1 = unique(p_data$Gene.Symbol[p_data$correctedPvalue..sporCRC..Vs..sporCRC.contr.. < 0.01 & p_data$regulation..sporCRC..Vs..sporCRC.contr.. == "down"])
+  #genes_type1 = unique(p_data$Gene.Symbol[p_data$correctedPvalue..CAC..Vs..CAC.contr.. < 0.01 & p_data$regulation..CAC..Vs..CAC.contr.. == "down"])
+  genes_type1 = intersect(genes_type1, total_shared_gene)
+  commom = intersect(whole_genes, genes_type1)
+  pValue = phyper(length(commom), length(genes_type1), 9144 - length(genes_type1), length(whole_genes), lower.tail = F)
+  print(paste("down", length(commom), length(genes_type1), 9144 - length(genes_type1), length(whole_genes), pValue, sep=","))
+  p_value = c(p_value, pValue)
+  
+  return(p_value)
+}
+
+
+result_10week = paper8_analysis(list_of_genes = diff_genes_10w)
+result_7week = paper8_analysis(list_of_genes = diff_genes_7w)
+result_4week = paper8_analysis(list_of_genes = diff_genes_4w)
+result_2week = paper8_analysis(list_of_genes = diff_genes_2w)
+
+```
+
+```{r, echo=FALSE}
+df_up = data.frame(matrix(vector(),8, 3,
+                dimnames=list(c(), c("Week", "class", "P_value"))),
+                stringsAsFactors=F)
+df_up$Week = c(rep("Week10", 2), rep("Week7", 2), rep("Week4", 2), rep("Week2", 2))
+df_up$class = c(rep(c("up", "down"), 4))
+df_up$P_value = c(result_10week, result_7week, result_4week, result_2week)
+df_up$P_value = round(-log10(df_up$P_value),1)
+df_up$Week = factor(df_up$Week, levels=c("Week10" ,"Week7", "Week4", "Week2"))
+df_up$class = factor(df_up$class, levels=c("up" ,"down"))
+
+ggplot(df_up, aes(x=Week, y=P_value, fill=class)) +
+  ggtitle("enrichment in CRC mouse DEG genes") +
+  geom_text(aes(x=Week, y=P_value, label=P_value, vjust = -1.0), position=position_dodge(.9), size=3) +
+  geom_bar(stat = "identity", position = "dodge") +
+  ylab("-log10(P-value)")
+```
