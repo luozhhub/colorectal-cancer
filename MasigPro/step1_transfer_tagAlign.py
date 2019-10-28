@@ -95,7 +95,9 @@ def transfer_bamFile():
         os.system("scp %s zhluo@211.69.141.147:/home/zhluo/Project/CRC/data_nazhang/step38_every_bam/bamFiles" % every_0_peak)
         os.system("scp %s zhluo@211.69.141.147:/home/zhluo/Project/CRC/data_nazhang/step38_every_bam/bamFiles" % every_1_peak)
         os.system("scp %s zhluo@211.69.141.147:/home/zhluo/Project/CRC/data_nazhang/step38_every_bam/bamFiles" % every_2_peak) 
+
         
 if __name__ == "__main__":
     #transfer_tagAlign()
     transfer_bamFile()
+
