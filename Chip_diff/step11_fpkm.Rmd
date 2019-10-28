@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+source("step9_DEG_chip_gene.R")
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
@@ -91,10 +92,10 @@ write.table(selected_peak_df, "/home/zhihl/Project/CRC/Chip_analysis/dff/version
 ```{r NFkB, echo=FALSE}
 #Rela :ENSMUSG00000024927
 df_all = read.delim("/home/zhihl/Project/CRC/RNA_analysis/all_diff_data.txt",sep = "\t", header=T)
-diff_genes_10w = diff_gene_func(df_all, "log2FoldChange.10wkVSctrl", "padj.10wkVSctrl", 1, "ENSEMBL")
-diff_genes_7w = diff_gene_func(df_all, "log2FoldChange.7wkVSctrl", "padj.7wkVSctrl", 1, "ENSEMBL")
-diff_genes_4w = diff_gene_func(df_all, "log2FoldChange.4wkVSctrl", "padj.4wkVSctrl", 1, "ENSEMBL")
-diff_genes_2w = diff_gene_func(df_all, "log2FoldChange.2wkVSctrl", "padj.2wkVSctrl", 1, "ENSEMBL")
+diff_genes_10w = diff_gene_in_mouse(df_all, "log2FoldChange.10wkVSctrl", "padj.10wkVSctrl", 1, "ENSEMBL")
+diff_genes_7w = diff_gene_in_mouse(df_all, "log2FoldChange.7wkVSctrl", "padj.7wkVSctrl", 1, "ENSEMBL")
+diff_genes_4w = diff_gene_in_mouse(df_all, "log2FoldChange.4wkVSctrl", "padj.4wkVSctrl", 1, "ENSEMBL")
+diff_genes_2w = diff_gene_in_mouse(df_all, "log2FoldChange.2wkVSctrl", "padj.2wkVSctrl", 1, "ENSEMBL")
 
 
 ```

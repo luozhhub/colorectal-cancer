@@ -51,7 +51,7 @@ ego <- enrichGO(gene          = diff_genes_10w[[1]],
                 pAdjustMethod = "BH",
                 pvalueCutoff  = 0.01,
                 qvalueCutoff  = 0.01)
-dotplot(ego, showCategory=15)
+#dotplot(ego, showCategory=15)
 write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/diff_genes_10w_up.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
 ```
 **10 weeks down**
@@ -149,7 +149,472 @@ ego <- enrichGO(gene          = diff_genes_2w[[2]],
                 pAdjustMethod = "BH",
                 pvalueCutoff  = 0.01,
                 qvalueCutoff  = 0.01)
-dotplot(ego, showCategory=15)
+#dotplot(ego, showCategory=15)
 write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/diff_genes_2w_down.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
 ```
 
+** colits  cancer all**
+```{r colits, echo =FALSE}
+source("../Chip_diff/step9_DEG_chip_gene.R")
+library("org.Mm.eg.db")
+library("clusterProfiler")
+
+df_all = read.delim("/home/zhihl/Project/CRC/RNA_analysis/all_diff_data.txt",sep = "\t", header=T)
+diff_gene_in_mouse = function(col_1 = "log2FoldChange.10wkVSctrl", col_2 = "padj.10wkVSctrl", fold_change=1 ,id_type="SYMBOL"){
+  #col_1: col name of log2 fold change
+  #col_2: col name of padj
+  #fold_change: log2 fold change
+  #id_type: "SYMBOL", "ENTRIZEID", "ENSEMBL" ....
+  #return list of up and down genes
+  
+  week_df = df_all[,c(col_1, col_2)]
+  diff_week_up = rownames(na.omit(week_df[week_df[,1] > fold_change & week_df[,2] < 0.01, ]))
+  diff_week_down = rownames(na.omit(week_df[week_df[,1] < -(fold_change) & week_df[,2] < 0.01, ]))
+  #return (list( unique(diff_week_up), unique(diff_week_down)))
+  
+  
+  up_symbol = unique(as.vector(diff_week_up))
+  
+  down_symbol = unique(as.vector(diff_week_down))
+  
+  return (list(up_symbol, down_symbol))
+}
+
+diff_genes_10w = diff_gene_in_mouse("log2FoldChange.10wkVSctrl", "padj.10wkVSctrl")
+diff_genes_7w = diff_gene_in_mouse("log2FoldChange.7wkVSctrl", "padj.7wkVSctrl")
+diff_genes_4w = diff_gene_in_mouse("log2FoldChange.4wkVSctrl", "padj.4wkVSctrl")
+diff_genes_2w = diff_gene_in_mouse("log2FoldChange.2wkVSctrl", "padj.2wkVSctrl")
+
+
+
+colits_up = union(diff_genes_2w[[1]], diff_genes_4w[[1]])
+colits_down = union(diff_genes_2w[[2]], diff_genes_4w[[2]])
+
+ego <- enrichGO(gene          = colits_up,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/rna/colits_up.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+ego <- enrichGO(gene          = colits_down,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/rna/colits_down.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+
+
+#cancer
+cancer_up = union(diff_genes_7w[[1]], diff_genes_10w[[1]])
+cancer_down = union(diff_genes_7w[[2]], diff_genes_10w[[2]])
+
+ego <- enrichGO(gene          = cancer_up,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/rna/cancer_up.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+ego <- enrichGO(gene          = cancer_down,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/rna/cancer_down.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+
+
+all_up = intersect(colits_up, cancer_up)
+all_down = intersect(colits_down, cancer_down)
+
+ego <- enrichGO(gene          = all_up,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/rna/all_up.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+ego <- enrichGO(gene          = all_down,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/rna/all_down.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+
+##############################################################################
+
+
+df_all = read.delim("/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/all_diff_data_H3K27ac.txt",sep = "\t", header=T)
+state = "enhancer"
+peak_gene = paste("/home/zhihl/Project/CRC/Chip_analysis/peak_dir_0821/", state, "/", state, ".peak.unique.ID.gene_name.bed", sep="")
+
+diff_genes_10w = diff_gene_for_chip(df_all, "log2FoldChange.10wkVSctrl", "padj.10wkVSctrl", 1, "ENSEMBL", peak_gene)
+diff_genes_7w = diff_gene_for_chip(df_all, "log2FoldChange.7wkVSctrl", "padj.7wkVSctrl", 1, "ENSEMBL", peak_gene)
+diff_genes_4w = diff_gene_for_chip(df_all, "log2FoldChange.4wkVSctrl", "padj.4wkVSctrl", 1, "ENSEMBL", peak_gene)
+diff_genes_2w = diff_gene_for_chip(df_all, "log2FoldChange.2wkVSctrl", "padj.2wkVSctrl", 1, "ENSEMBL", peak_gene)
+
+colits_up = union(diff_genes_2w[[1]], diff_genes_4w[[1]])
+colits_down = union(diff_genes_2w[[2]], diff_genes_4w[[2]])
+
+ego <- enrichGO(gene          = colits_up,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/enhancer/colits_up.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+ego <- enrichGO(gene          = colits_down,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/enhancer/colits_down.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+
+
+#cancer
+cancer_up = union(diff_genes_7w[[1]], diff_genes_10w[[1]])
+cancer_down = union(diff_genes_7w[[2]], diff_genes_10w[[2]])
+
+ego <- enrichGO(gene          = cancer_up,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/enhancer/cancer_up.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+ego <- enrichGO(gene          = cancer_down,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/enhancer/cancer_down.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+
+
+all_up = intersect(colits_up, cancer_up)
+all_down = intersect(colits_down, cancer_down)
+
+ego <- enrichGO(gene          = all_up,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/enhancer/all_up.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+ego <- enrichGO(gene          = all_down,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/enhancer/all_down.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+
+
+
+
+
+
+
+#################################################################################
+df_all = read.delim("/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/all_diff_data_H3K4me3.txt",sep = "\t", header=T)
+state = "promoter"
+peak_gene = paste("/home/zhihl/Project/CRC/Chip_analysis/peak_dir_0821/", state, "/", state, ".peak.unique.ID.gene_name.bed", sep="")
+
+diff_genes_10w = diff_gene_for_chip(df_all, "log2FoldChange.10wkVSctrl", "padj.10wkVSctrl", 1, "ENSEMBL", peak_gene)
+diff_genes_7w = diff_gene_for_chip(df_all, "log2FoldChange.7wkVSctrl", "padj.7wkVSctrl", 1, "ENSEMBL", peak_gene)
+diff_genes_4w = diff_gene_for_chip(df_all, "log2FoldChange.4wkVSctrl", "padj.4wkVSctrl", 1, "ENSEMBL", peak_gene)
+diff_genes_2w = diff_gene_for_chip(df_all, "log2FoldChange.2wkVSctrl", "padj.2wkVSctrl", 1, "ENSEMBL", peak_gene)
+
+colits_up = union(diff_genes_2w[[1]], diff_genes_4w[[1]])
+colits_down = union(diff_genes_2w[[2]], diff_genes_4w[[2]])
+
+ego <- enrichGO(gene          = colits_up,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/promoter/colits_up.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+ego <- enrichGO(gene          = colits_down,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/promoter/colits_down.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+
+
+#cancer
+cancer_up = union(diff_genes_7w[[1]], diff_genes_10w[[1]])
+cancer_down = union(diff_genes_7w[[2]], diff_genes_10w[[2]])
+
+ego <- enrichGO(gene          = cancer_up,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/promoter/cancer_up.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+ego <- enrichGO(gene          = cancer_down,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/promoter/cancer_down.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+
+
+all_up = intersect(colits_up, cancer_up)
+all_down = intersect(colits_down, cancer_down)
+
+ego <- enrichGO(gene          = all_up,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/promoter/all_up.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+ego <- enrichGO(gene          = all_down,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/promoter/all_down.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+```
+
+```{r histone, echo=FALSE}
+
+
+
+df_all = read.delim("/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/all_diff_data_H3K27ac.txt",sep = "\t", header=T)
+state = "enhancer"
+peak_gene = paste("/home/zhihl/Project/CRC/Chip_analysis/peak_dir_0821/", state, "/", state, ".peak.unique.ID.gene_name.bed", sep="")
+
+diff_genes_10w = diff_gene_for_chip(df_all, "log2FoldChange.10wkVSctrl", "padj.10wkVSctrl", 1, "ENSEMBL", peak_gene)
+diff_genes_7w = diff_gene_for_chip(df_all, "log2FoldChange.7wkVSctrl", "padj.7wkVSctrl", 1, "ENSEMBL", peak_gene)
+diff_genes_4w = diff_gene_for_chip(df_all, "log2FoldChange.4wkVSctrl", "padj.4wkVSctrl", 1, "ENSEMBL", peak_gene)
+diff_genes_2w = diff_gene_for_chip(df_all, "log2FoldChange.2wkVSctrl", "padj.2wkVSctrl", 1, "ENSEMBL", peak_gene)
+
+colits_up = union(diff_genes_2w[[1]], diff_genes_4w[[1]])
+colits_down = union(diff_genes_2w[[2]], diff_genes_4w[[2]])
+
+ego <- enrichGO(gene          = colits_up,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/enhancer/colits_up.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+ego <- enrichGO(gene          = colits_down,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/enhancer/colits_down.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+
+
+#cancer
+cancer_up = union(diff_genes_7w[[1]], diff_genes_10w[[1]])
+cancer_down = union(diff_genes_7w[[2]], diff_genes_10w[[2]])
+
+ego <- enrichGO(gene          = cancer_up,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/enhancer/cancer_up.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+ego <- enrichGO(gene          = cancer_down,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/enhancer/cancer_down.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+
+
+all_up = intersect(colits_up, cancer_up)
+all_down = intersect(colits_down, cancer_down)
+
+ego <- enrichGO(gene          = all_up,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/enhancer/all_up.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+ego <- enrichGO(gene          = all_down,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/enhancer/all_down.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+
+```
+
+
+```{r promoter, echo=FALSE}
+df_all = read.delim("/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/all_diff_data_H3K4me3.txt",sep = "\t", header=T)
+state = "promoter"
+peak_gene = paste("/home/zhihl/Project/CRC/Chip_analysis/peak_dir_0821/", state, "/", state, ".peak.unique.ID.gene_name.bed", sep="")
+
+diff_genes_10w = diff_gene_for_chip(df_all, "log2FoldChange.10wkVSctrl", "padj.10wkVSctrl", 1, "ENSEMBL", peak_gene)
+diff_genes_7w = diff_gene_for_chip(df_all, "log2FoldChange.7wkVSctrl", "padj.7wkVSctrl", 1, "ENSEMBL", peak_gene)
+diff_genes_4w = diff_gene_for_chip(df_all, "log2FoldChange.4wkVSctrl", "padj.4wkVSctrl", 1, "ENSEMBL", peak_gene)
+diff_genes_2w = diff_gene_for_chip(df_all, "log2FoldChange.2wkVSctrl", "padj.2wkVSctrl", 1, "ENSEMBL", peak_gene)
+
+colits_up = union(diff_genes_2w[[1]], diff_genes_4w[[1]])
+colits_down = union(diff_genes_2w[[2]], diff_genes_4w[[2]])
+
+ego <- enrichGO(gene          = colits_up,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/promoter/colits_up.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+ego <- enrichGO(gene          = colits_down,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/promoter/colits_down.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+
+
+#cancer
+cancer_up = union(diff_genes_7w[[1]], diff_genes_10w[[1]])
+cancer_down = union(diff_genes_7w[[2]], diff_genes_10w[[2]])
+
+ego <- enrichGO(gene          = cancer_up,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/promoter/cancer_up.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+ego <- enrichGO(gene          = cancer_down,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/promoter/cancer_down.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+
+
+all_up = intersect(colits_up, cancer_up)
+all_down = intersect(colits_down, cancer_down)
+
+ego <- enrichGO(gene          = all_up,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/promoter/all_up.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+ego <- enrichGO(gene          = all_down,
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+#dotplot(ego, showCategory=15)
+write.table(ego@result, "/home/zhihl/Project/CRC/rna_seq_git/Figure/promoter/all_down.txt", sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+
+
+```
