@@ -1,0 +1,94 @@
+---
+title: "TF_figure"
+author: "luozhihui"
+date: "2019/10/25"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+所有的转录因子富集都是在2,4,7,10 week 富集到了， 但是在ctrl没有富集到。  
+
+```{r TF}
+y = -log10(c(1.000000e-04, 1.000000e-04, 1.000000e-04, 1.000000e-52, 1.000000e-04, 1.000000e-05, 1.000000e-11, 1.000000e-6))
+x = factor(rep(c("week2", "week4", "week7", "week10"), 2), levels = c("week2", "week4", "week7", "week10"))
+gene = c(rep("Gfi1b", 4), rep("ZNF416", 4))
+BOD = data.frame(time=x, p_value = y)
+
+library(ggplot2)
+ggplot(BOD, aes(x=time, y=p_value, group=gene, color=gene)) + 
+  geom_line(linetype="solid") +
+  ylab("-log10(P-value)") +
+  ggtitle("H3K27ac TF enrichment")
+  
+
+#H3K27me3
+y = -log10(c(1.000000e-03, 1.000000e-07, 1.000000e-3, 1.000000e-8))
+x = factor(c("week2", "week4", "week7", "week10"), levels = c("week2", "week4", "week7", "week10"))
+BOD = data.frame(time=x, p_value = y)
+
+library(ggplot2)
+ggplot(BOD, aes(x=time, y=p_value, group=1)) + 
+  geom_line(linetype="solid") +
+  ylab("-log10(P-value)") +
+  ggtitle("GATA3 in H3K27me3 TF enrichment")
+
+#H3K4me1
+y = -log10(c(1.000000e-03, 1.000000e-05, 1.000000e-7, 1.000000e-12))
+x = factor(c("week2", "week4", "week7", "week10"), levels = c("week2", "week4", "week7", "week10"))
+BOD = data.frame(time=x, p_value = y)
+
+library(ggplot2)
+ggplot(BOD, aes(x=time, y=p_value, group=1)) + 
+  geom_line(linetype="solid") +
+  ylab("-log10(P-value)") +
+  ggtitle("Ascl2 in H3K4me1 TF enrichment")
+
+
+
+
+
+#K92
+y = -log10(c(1.000000e-17, 1.000000e-57, 1.000000e-35, 1.000000e-8,
+             1.000000e-16, 1.000000e-28, 1.000000e-24, 1.000000e-16,
+             1.000000e-10, 1.000000e-17, 1.000000e-6, 1.000000e-6,
+             1.000000e-08, 1.000000e-14, 1.000000e-27, 1.000000e-5,
+             1.000000e-05, 1.000000e-06, 1.000000e-20, 1.000000e-14))
+x = factor(rep(c("week2", "week4", "week7", "week10"), 5), levels = c("week2", "week4", "week7", "week10"))
+gene = c(rep("Sox3", 4), rep("Sox2", 4),rep("Sox6", 4),rep("Sox4", 4),rep("SpiB", 4))
+BOD = data.frame(time=x, p_value = y)
+
+library(ggplot2)
+ggplot(BOD, aes(x=time, y=p_value, group=gene, colour=gene)) + 
+  geom_line(linetype="solid") +
+  ylab("-log10(P-value)") +
+  ggtitle("H3K9me2 TF enrichment")
+
+
+#K93
+y = -log10(c(1.000000e-37, 1.000000e-45, 1.000000e-30, 1.000000e-108,
+             1.000000e-13, 1.000000e-12, 1.000000e-13, 1.000000e-62,
+             1.000000e-11, 1.000000e-26, 1.000000e-14, 1.000000e-98,
+             1.000000e-08, 1.000000e-18, 1.000000e-15, 1.000000e-12,
+             1.000000e-7, 1.000000e-16, 1.000000e-17, 1.000000e-10,
+             1.000000e-6, 1.000000e-10, 1.000000e-5, 1.000000e-39,
+             1.000000e-4, 1.000000e-28, 1.000000e-15, 1.000000e-46,
+             1.000000e-4, 1.000000e-32, 1.000000e-16, 1.000000e-14,
+             1.000000e-03, 1.000000e-15, 1.000000e-14, 1.000000e-49
+             ))
+x = factor(rep(c("week2", "week4", "week7", "week10"), 9), levels = c("week2", "week4", "week7", "week10"))
+gene = c(rep("Nanog", 4), rep("Olig2", 4),rep("Atoh1", 4),rep("Cux2", 4),rep("HNF6", 4), rep("PAX6", 4),rep("ZNF7", 4),rep("Tgif2", 4),rep("STAT1", 4))
+BOD = data.frame(time=x, p_value = y)
+
+library(ggplot2)
+ggplot(BOD, aes(x=time, y=p_value, group=gene, colour=gene)) + 
+  geom_line(linetype="solid") +
+  ylab("-log10(P-value)") +
+  ggtitle("H3K9me3 TF enrichment")
+```
+

@@ -1,0 +1,51 @@
+---
+title: " Alluvial plots"
+author: "luozhihui"
+date: "2019/10/22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+冲击图  
+参考：Hontelez S, Van Kruijsbergen I, Georgiou G, et al. Embryonic transcription is controlled by maternally defined chromatin state[J]. Nature communications, 2015, 6: 10148.  
+文章中的figure 2  
+
+主要展示不同的element（chromatin state）在时间点上的变化。   
+完全画成一样的，目前还实现不了。   
+
+```{r alluvium, echo=FALSE}
+library(ggalluvial)
+library(ggplot2)
+
+state = c(1:13, 1:13, 1:13, 1:13)
+element = rep(c("Heterochromatin","Quiescent", "Heterochromatin", "Repressed",
+"Repressed", "Promoter", "Enhancer", "Enhancer", "Enhancer", "Promoter", "Promoter", "Promoter", "Promoter"
+), 4)
+freq = c(
+4.12, 59.65 , 1.83 , 12.21 ,3.12 ,0.78 ,2.19 ,2.31 ,11.57 ,0.52 ,0.35 ,0.76 ,0.59, 
+8.83, 55.76 , 1.00 , 10.48 ,4.48 ,0.90 ,4.02 ,3.37 ,9.30 ,0.69 ,0.37 ,0.34 ,0.46 ,
+4.08 ,59.03 ,1.25 ,11.44 ,4.85 ,0.68 ,4.53 ,3.29 ,9.11 ,0.54 ,0.41 ,0.37 ,0.42 ,
+17.53 ,46.22 ,0.34 ,11.48 ,3.56 ,0.55 ,3.25 ,4.77 ,11.18 ,0.38 ,0.12 ,0.16 ,0.46)
+time = c(rep("Week2", 13), rep("Week4", 13),rep("Week7", 13),rep("Week10", 13))
+data_chromatin = data.frame(state=state, element=element, time=time, freq=freq)
+data_chromatin$element <- as.factor(data_chromatin$element)
+data_chromatin$time = factor(data_chromatin$time, levels=c("Week2", "Week4","Week7","Week10"))
+
+ggplot(data_chromatin,
+       aes(x = time, stratum = element, alluvium = state,
+           fill = element, label = element, y = freq)) +
+  scale_fill_brewer(type = "qual", palette = "Set2") +
+  geom_flow(stat = "alluvium", lode.guidance = "frontback",
+            color = "darkgray") +
+  geom_stratum() +
+  theme(legend.position = "bottom") +
+  ggtitle("chromotin state flow")
+```
+
+## Including Plots
+
+
