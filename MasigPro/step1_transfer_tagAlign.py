@@ -49,7 +49,7 @@ def transfer_tagAlign():
         os.system("scp %s zhluo@211.69.141.147:/home/zhluo/Project/CRC/data_nazhang/step37_tagAlign/every_sample" % every_1_peak)
         os.system("scp %s zhluo@211.69.141.147:/home/zhluo/Project/CRC/data_nazhang/step37_tagAlign/every_sample" % every_2_peak)   
         
-def transfer_bamFile():
+def transfer_bamFile(marker="call-filter"):
     logDir = "/public/home/zhluo/project/CRC_data/step24_cromwell/last_version"
     dataBaseDir = "/public/home/zhluo/project/CRC_data/step24_cromwell/cromwell-executions/chip/"
     files = os.listdir(logDir)
@@ -65,7 +65,7 @@ def transfer_bamFile():
         
         
         #get every peak path
-        every_dir = os.path.join(dataBaseDir, jobID, "call-filter/shard-0/execution/")
+        every_dir = os.path.join(dataBaseDir, jobID, "%s/shard-0/execution/" % marker)
         files_p = os.listdir(every_dir)
         for oneP in files_p:
             if not re.search("nodup.bam$", oneP):
@@ -74,7 +74,7 @@ def transfer_bamFile():
         every_0_peak = os.path.join(every_dir, peakF)
         print(every_0_peak)
         
-        every_dir = os.path.join(dataBaseDir, jobID, "call-filter/shard-1/execution/")
+        every_dir = os.path.join(dataBaseDir, jobID, "%s/shard-1/execution/" % marker)
         files_p = os.listdir(every_dir)
         for oneP in files_p:
             if not re.search("nodup.bam$", oneP):
@@ -83,7 +83,7 @@ def transfer_bamFile():
         every_1_peak = os.path.join(every_dir, peakF)
         print(every_1_peak)
         
-        every_dir = os.path.join(dataBaseDir, jobID, "call-filter/shard-2/execution/")
+        every_dir = os.path.join(dataBaseDir, jobID, "%s/shard-2/execution/" % marker)
         files_p = os.listdir(every_dir)
         for oneP in files_p:
             if not re.search("nodup.bam$", oneP):
@@ -99,5 +99,6 @@ def transfer_bamFile():
         
 if __name__ == "__main__":
     #transfer_tagAlign()
-    transfer_bamFile()
+    transfer_bamFile(marker="call-filter_ctl")
+    
 
