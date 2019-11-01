@@ -87,7 +87,7 @@ dev.off()
 
 
 #for (i in 1:9){
-i = 1
+i = 3
 clu1 = cluster_result$cut[cluster_result$cut == i]
 #clu9 = cluster_result$cut[cluster_result$cut == 9]
 #clu15 = cluster_result$cut[cluster_result$cut == 15]
@@ -109,6 +109,158 @@ pdf_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/rna/pdf_", i , 
 pdf(pdf_name, width=10, height=10)
 dotplot(ego, showCategory=15)
 dev.off()
+
+
+
+i = 4
+clu1 = cluster_result$cut[cluster_result$cut == i]
+#clu9 = cluster_result$cut[cluster_result$cut == 9]
+#clu15 = cluster_result$cut[cluster_result$cut == 15]
+#deg_list = c(names(clu8), names(clu9), names(clu15))
+
+library(org.Mm.eg.db)
+library("clusterProfiler")
+ego <- enrichGO(gene          = names(clu1),
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+
+table_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/rna/RNA_", i , ".txt", sep="")
+write.table(ego@result, table_name, sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+pdf_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/rna/pdf_", i , ".pdf", sep="")
+pdf(pdf_name, width=10, height=10)
+dotplot(ego, showCategory=15)
+dev.off()
+
+
+
+i = 5
+clu1 = cluster_result$cut[cluster_result$cut == i]
+#clu9 = cluster_result$cut[cluster_result$cut == 9]
+#clu15 = cluster_result$cut[cluster_result$cut == 15]
+#deg_list = c(names(clu8), names(clu9), names(clu15))
+
+library(org.Mm.eg.db)
+library("clusterProfiler")
+ego <- enrichGO(gene          = names(clu1),
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+
+table_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/rna/RNA_", i , ".txt", sep="")
+write.table(ego@result, table_name, sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+pdf_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/rna/pdf_", i , ".pdf", sep="")
+pdf(pdf_name, width=10, height=10)
+dotplot(ego, showCategory=15)
+dev.off()
+
+
+
+
+i = 6
+clu1 = cluster_result$cut[cluster_result$cut == i]
+#clu9 = cluster_result$cut[cluster_result$cut == 9]
+#clu15 = cluster_result$cut[cluster_result$cut == 15]
+#deg_list = c(names(clu8), names(clu9), names(clu15))
+
+library(org.Mm.eg.db)
+library("clusterProfiler")
+ego <- enrichGO(gene          = names(clu1),
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+
+table_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/rna/RNA_", i , ".txt", sep="")
+write.table(ego@result, table_name, sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+pdf_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/rna/pdf_", i , ".pdf", sep="")
+pdf(pdf_name, width=10, height=10)
+dotplot(ego, showCategory=15)
+dev.off()
+
+
+
+i = 7
+clu1 = cluster_result$cut[cluster_result$cut == i]
+#clu9 = cluster_result$cut[cluster_result$cut == 9]
+#clu15 = cluster_result$cut[cluster_result$cut == 15]
+#deg_list = c(names(clu8), names(clu9), names(clu15))
+
+library(org.Mm.eg.db)
+library("clusterProfiler")
+ego <- enrichGO(gene          = names(clu1),
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+
+table_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/rna/RNA_", i , ".txt", sep="")
+write.table(ego@result, table_name, sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+pdf_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/rna/pdf_", i , ".pdf", sep="")
+pdf(pdf_name, width=10, height=10)
+dotplot(ego, showCategory=15)
+dev.off()
+
+
+
+i = 8
+clu1 = cluster_result$cut[cluster_result$cut == i]
+#clu9 = cluster_result$cut[cluster_result$cut == 9]
+#clu15 = cluster_result$cut[cluster_result$cut == 15]
+#deg_list = c(names(clu8), names(clu9), names(clu15))
+
+library(org.Mm.eg.db)
+library("clusterProfiler")
+ego <- enrichGO(gene          = names(clu1),
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+
+table_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/rna/RNA_", i , ".txt", sep="")
+write.table(ego@result, table_name, sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+pdf_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/rna/pdf_", i , ".pdf", sep="")
+pdf(pdf_name, width=10, height=10)
+dotplot(ego, showCategory=15)
+dev.off()
+
+
+i = 9
+clu1 = cluster_result$cut[cluster_result$cut == i]
+#clu9 = cluster_result$cut[cluster_result$cut == 9]
+#clu15 = cluster_result$cut[cluster_result$cut == 15]
+#deg_list = c(names(clu8), names(clu9), names(clu15))
+
+library(org.Mm.eg.db)
+library("clusterProfiler")
+ego <- enrichGO(gene          = names(clu1),
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+
+table_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/rna/RNA_", i , ".txt", sep="")
+write.table(ego@result, table_name, sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+pdf_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/rna/pdf_", i , ".pdf", sep="")
+pdf(pdf_name, width=10, height=10)
+dotplot(ego, showCategory=15)
+dev.off()
+
+
 
 #}
 ```
