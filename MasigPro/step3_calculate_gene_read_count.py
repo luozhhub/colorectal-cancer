@@ -27,7 +27,22 @@ class cal_gene_marks():
         print(len(set(list(df["ensembl"]))))
         
         df.to_csv("/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/gene_body_2k.bed", sep="\t", header=False,  index=False)
+    
+    
+    def get_TSS(self, distence=2000):
+        tss_file = "/home/zhluo/Project/CRC/data_nazhang/step39_read_count/multiBamSummary_TSS_2kb/mm10.Tss.gff"
+        df = pd.read_csv(tss_file, sep="\t", index_col=False, names=["chr", "tss", "strand", "gene_1", "gene_id", "gene_2", "transcript_id"])
+        df_sub = df[["chr", "tss", "gene_id"]]
+        df_sub["gene_id"] = [item.strip(";").split(".")[0] for  item in df_sub["gene_id"]]
+        df_sub = df_sub.groupby("gene_id").agg({"chr": "first", "tss": [np.min , np.max ]})
+        df_sub.columns = df_sub.columns.droplevel(0)
+        df_sub.columns = ["chr", "start", "end" ]
+        df_sub["ensembl"] = df_sub.index
+        #print(df_sub.groupby("gene_id")["chr"].first())
         
+        df_sub["start"] = [item - distence for item in df_sub["start"]]
+        df_sub["end"] = [item + distence for item in df_sub["end"]]
+        df_sub.to_csv("/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/gene_tss_%s.bed" % distence, sep="\t", header=False,  index=False)    
         
     def run_multiBamSummary(self, markers=["H3K27me3"], bs="H3K27me3.bed", bed_file=None):
         #calculate read count
@@ -55,20 +70,6 @@ class cal_gene_marks():
         pbs_handle.write(cmd)
         pbs_handle.close()
         
-    def get_TSS(self, distence=2000):
-        tss_file = "/home/zhluo/Project/CRC/data_nazhang/step39_read_count/multiBamSummary_TSS_2kb/mm10.Tss.gff"
-        df = pd.read_csv(tss_file, sep="\t", index_col=False, names=["chr", "tss", "strand", "gene_1", "gene_id", "gene_2", "transcript_id"])
-        df_sub = df[["chr", "tss", "gene_id"]]
-        df_sub["gene_id"] = [item.strip(";").split(".")[0] for  item in df_sub["gene_id"]]
-        df_sub = df_sub.groupby("gene_id").agg({"chr": "first", "tss": [np.min , np.max ]})
-        df_sub.columns = df_sub.columns.droplevel(0)
-        df_sub.columns = ["chr", "start", "end" ]
-        df_sub["ensembl"] = df_sub.index
-        #print(df_sub.groupby("gene_id")["chr"].first())
-        
-        df_sub["start"] = [item - distence for item in df_sub["start"]]
-        df_sub["end"] = [item + distence for item in df_sub["end"]]
-        df_sub.to_csv("/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/gene_tss_%s.bed" % distence, sep="\t", header=False,  index=False)
         
     def merge_read_count(self):
         enhancer = "/home/zhluo/Project/CRC/data_nazhang/step39_read_count/multiBamSummary_gene_body/readCounts_enhancer.bed.tab"
@@ -116,9 +117,7 @@ class cal_gene_marks():
         total_df = pd.merge(total_df, reppressed_merge_df,  how='outer', left_index=True, right_index=True)
         #print(total_df.columns)
         #total_df = total_df.drop(["ensembl"], axis=1)
-        
-        
-        
+            
         heterochromatin_df = pd.read_csv(heterochromatin, sep="\t", index_col=False, header=0, quoting=3)
         heterochromatin_df.columns = [item.strip("#'") for item in heterochromatin_df]
         heterochromatin_gene_df = pd.read_csv(heterochromatin_gene, sep="\t", index_col=False, names=["chr", "start", "end", "ensembl"])
@@ -132,20 +131,102 @@ class cal_gene_marks():
         total_df.to_csv("/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/total_readCount.txt" , sep="\t", header=True,  index=True)
         
         
-        
-        
-        
-        
-        
-        
-        
-        
-        
         #print(total_df[0:5])
         #print(len(total_df))
         
+    def merge_single_marker(self, marker=None):
+        enhancer = "/home/zhluo/Project/CRC/data_nazhang/step39_read_count/multiBamSummary_gene_body/readCounts_enhancer.bed.tab"
+        promoter = "/home/zhluo/Project/CRC/data_nazhang/step39_read_count/multiBamSummary_gene_body/readCounts_H3K4me3.bed.tab" 
+        reppressed = "/home/zhluo/Project/CRC/data_nazhang/step39_read_count/multiBamSummary_gene_body/readCounts_H3K27me3.bed.tab"
+        heterochromatin = "/home/zhluo/Project/CRC/data_nazhang/step39_read_count/multiBamSummary_gene_body/readCounts_K92_K93.bed.tab"
+        H3K27ac_tab =  "/home/zhluo/Project/CRC/data_nazhang/step39_read_count/multiBamSummary_gene_body/readCounts_H3K27ac.bed.tab"
+        H3K4me1_tab =  "/home/zhluo/Project/CRC/data_nazhang/step39_read_count/multiBamSummary_gene_body/readCounts_H3K4me1.bed.tab"
+        H3K9me2_tab =  "/home/zhluo/Project/CRC/data_nazhang/step39_read_count/multiBamSummary_gene_body/readCounts_H3K9me2.bed.tab"
+        H3K9me3_tab =  "/home/zhluo/Project/CRC/data_nazhang/step39_read_count/multiBamSummary_gene_body/readCounts_H3K9me3.bed.tab"
         
         
+        input_tss_2k = "/home/zhluo/Project/CRC/data_nazhang/step39_read_count/multiBamSummary_gene_body/readCounts_Input_2k.bed.tab"
+        input_tss_10k = "/home/zhluo/Project/CRC/data_nazhang/step39_read_count/multiBamSummary_gene_body/readCounts_Input_10k.bed.tab"
+        input_tss_100k = "/home/zhluo/Project/CRC/data_nazhang/step39_read_count/multiBamSummary_gene_body/readCounts_Input_100K.bed.tab"
+        input_body_2k = "/home/zhluo/Project/CRC/data_nazhang/step39_read_count/multiBamSummary_gene_body/readCounts_Input_body_2k.bed.tab"
+        
+        
+        enhancer_gene = "/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/gene_tss_100000.bed"
+        promoter_gene = "/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/gene_tss_2000.bed"
+        repressed_gene = "/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/gene_body_2k.bed"
+        heterochromatin_gene = "/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/gene_tss_10000.bed"    
+                
+        if marker == "H3K4me3":
+            read_count_table = promoter
+            gene_table = promoter_gene
+            input_table = input_tss_2k
+            gene_df = pd.read_csv(gene_table, sep="\t", index_col=False, names=["chr", "start", "end", "ensembl"])
+            
+        if marker == "H3K27me3":
+            read_count_table = reppressed
+            gene_table = repressed_gene
+            input_table = input_body_2k
+            gene_df = pd.read_csv(gene_table, sep="\t", index_col=False, names=["chr", "start", "end", "strand", "ensembl"])
+            
+        if marker == "enhancer":
+            read_count_table = enhancer
+            gene_table = enhancer_gene
+            input_table = input_tss_100k
+            gene_df = pd.read_csv(gene_table, sep="\t", index_col=False, names=["chr", "start", "end", "ensembl"])
+            
+        if marker == "H3K27ac":
+            read_count_table = H3K27ac_tab
+            gene_table = enhancer_gene
+            input_table = input_tss_100k
+            gene_df = pd.read_csv(gene_table, sep="\t", index_col=False, names=["chr", "start", "end", "ensembl"])
+            
+        if marker == "H3K4me1":
+            read_count_table = H3K4me1_tab
+            gene_table = enhancer_gene
+            input_table = input_tss_100k
+            gene_df = pd.read_csv(gene_table, sep="\t", index_col=False, names=["chr", "start", "end", "ensembl"])
+            
+        if marker == "heterochromatin":
+            read_count_table = heterochromatin
+            gene_table = heterochromatin_gene
+            input_table = input_tss_10k
+            gene_df = pd.read_csv(gene_table, sep="\t", index_col=False, names=["chr", "start", "end", "ensembl"])
+            
+            
+        if marker == "H3K9me2":
+            read_count_table = H3K9me2_tab
+            gene_table = heterochromatin_gene
+            input_table = input_tss_10k
+            gene_df = pd.read_csv(gene_table, sep="\t", index_col=False, names=["chr", "start", "end", "ensembl"])
+        
+        if marker == "H3K9me3":
+            read_count_table = H3K9me3_tab
+            gene_table = heterochromatin_gene
+            input_table = input_tss_10k
+            gene_df = pd.read_csv(gene_table, sep="\t", index_col=False, names=["chr", "start", "end", "ensembl"])
+        
+        
+                
+        marker_df = pd.read_csv(read_count_table, sep="\t", index_col=False, header=0, quoting=3)
+        marker_df.columns = [item.strip("#'") for item in marker_df]
+        marker_merge_df = pd.merge(marker_df, gene_df,  how='left', left_on=["chr", "start", "end"], right_on = ["chr", "start", "end"])
+        marker_merge_df = marker_merge_df.drop_duplicates()
+        marker_merge_df = marker_merge_df.dropna()
+        marker_merge_df.index = marker_merge_df["ensembl"]
+        marker_merge_df = marker_merge_df.drop(["chr", "start", "end", "ensembl"], axis=1)
+        
+        
+        input_tss_df = pd.read_csv(input_table, sep="\t", index_col=False, header=0, quoting=3)
+        input_tss_df.columns = [item.strip("#'") for item in input_tss_df]
+        input_merge_df = pd.merge(input_tss_df, gene_df,  how='left', left_on=["chr", "start", "end"], right_on = ["chr", "start", "end"])
+        input_merge_df = input_merge_df.drop_duplicates()
+        input_merge_df = input_merge_df.dropna()
+        input_merge_df.index = input_merge_df["ensembl"]
+        input_merge_df = input_merge_df.drop(["chr", "start", "end", "ensembl"], axis=1)
+        
+        
+        total_df = pd.merge(marker_merge_df, input_merge_df,  how='outer', left_index=True, right_index=True)
+        total_df.to_csv("/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/%s_total_readCount.txt" % marker, sep="\t", header=True,  index=True)
         
         
 
@@ -172,7 +253,35 @@ if __name__ == "__main__":
     """
     qsub -q batch -V -l nodes=1:ppn=26 ./run_multiBamSummary_enhancer.bed.pbs
     """
-    gene_cal.merge_read_count()    
+    #gene_cal.run_multiBamSummary(markers=["H3K27ac"], bs="H3K27ac.bed", bed_file="/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/gene_tss_100000.bed")
+    #gene_cal.run_multiBamSummary(markers=["H3K4me1"], bs="H3K4me1.bed", bed_file="/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/gene_tss_100000.bed")
+    #gene_cal.run_multiBamSummary(markers=["H3K9me2"], bs="H3K9me2.bed", bed_file="/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/gene_tss_10000.bed")
+    #gene_cal.run_multiBamSummary(markers=["H3K9me3"], bs="H3K9me3.bed", bed_file="/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/gene_tss_10000.bed")
+    """
+    qsub -q batch -V -l nodes=1:ppn=26 ./run_multiBamSummary_H3K27ac.bed.pbs
+    qsub -q batch -V -l nodes=1:ppn=26 ./run_multiBamSummary_H3K4me1.bed.pbs
+    qsub -q batch -V -l nodes=1:ppn=26 ./run_multiBamSummary_H3K9me2.bed.pbs
+    qsub -q batch -V -l nodes=1:ppn=26 ./run_multiBamSummary_H3K9me3.bed.pbs
+    """
+    
+    
+    
+    #gene_cal.merge_read_count() 
+    #another method
+    #gene_cal.run_multiBamSummary(markers=["Input"], bs="Input_body_2K.bed", bed_file="/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/gene_body_2k.bed")
+    #gene_cal.run_multiBamSummary(markers=["Input"], bs="Input_2K.bed", bed_file="/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/gene_tss_2000.bed")
+    #gene_cal.run_multiBamSummary(markers=["Input"], bs="Input_body_real_10K.bed", bed_file="/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/gene_tss_10000.bed")
+    #gene_cal.run_multiBamSummary(markers=["Input"], bs="Input_100K.bed", bed_file="/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/gene_tss_100000.bed")
+    #gene_cal.merge_single_marker(marker="H3K4me3")   
+    #gene_cal.merge_single_marker(marker="H3K27me3")
+    #gene_cal.merge_single_marker(marker="enhancer")
+    #gene_cal.merge_single_marker(marker="heterochromatin")
+    gene_cal.merge_single_marker(marker="H3K27ac")
+    gene_cal.merge_single_marker(marker="H3K4me1")
+    gene_cal.merge_single_marker(marker="H3K9me2")
+    gene_cal.merge_single_marker(marker="H3K9me3")
+    
+    
     
     
     
