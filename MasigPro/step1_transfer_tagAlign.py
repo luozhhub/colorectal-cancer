@@ -3,7 +3,7 @@
       transfer_tagAlign()  
 
 """
-
+import sys,os,re
 
 def transfer_tagAlign():
     logDir = "/public/home/zhluo/project/CRC_data/step24_cromwell/last_version"
@@ -49,6 +49,7 @@ def transfer_tagAlign():
         os.system("scp %s zhluo@211.69.141.147:/home/zhluo/Project/CRC/data_nazhang/step37_tagAlign/every_sample" % every_1_peak)
         os.system("scp %s zhluo@211.69.141.147:/home/zhluo/Project/CRC/data_nazhang/step37_tagAlign/every_sample" % every_2_peak)   
         
+
 def transfer_bamFile(marker="call-filter"):
     logDir = "/public/home/zhluo/project/CRC_data/step24_cromwell/last_version"
     dataBaseDir = "/public/home/zhluo/project/CRC_data/step24_cromwell/cromwell-executions/chip/"
