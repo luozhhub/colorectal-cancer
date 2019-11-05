@@ -1,9 +1,9 @@
 args=commandArgs(T)
 library("maSigPro")
-Time = c(rep(0, 3), rep(2, 3), rep(4, 3), rep(7, 3), rep(10, 3), rep(0, 3), rep(2, 3), rep(4, 3), rep(7, 3), rep(10, 3)) 
-Replicates = rep(1:10, each=3)
-Control = c(rep(0,15), rep(1, 15))
-histone_mark = c(rep(1,15), rep(0,15))
+Time = c(rep(0, 3), rep(2, 3), rep(4, 3), rep(7, 3), rep(10, 3))
+Replicates = rep(1:5, each=3)
+Control = c(rep(0,15))
+histone_mark = c(rep(1,15))
 #input = c(rep(1,15), rep(0,15))
 
 marker = args[1]
@@ -11,7 +11,7 @@ marker = args[1]
 CRC.design = cbind(Time,Replicates, Control, histone_mark)
 #rownames(CRC.design) <- paste("Array", c(1:90), sep = "")
 sample_vector = c()
-for (mark in c(marker, "Input")){
+for (mark in c(marker)){
   for (we in c("ctrl", "2weeks", "4weeks", "7weeks", "10weeks")){
     for ( rep in c("1", "2" ,"3")){
       sample = paste(paste(we, rep, sep="_"), mark, sep="_")
@@ -35,7 +35,7 @@ df = scale(df, center = TRUE, scale = TRUE)
 fit <- p.vector(df, d, Q = 0.05, MT.adjust = "BH", min.obs = 5)
 tstep <- T.fit(fit, step.method = "backward", alfa = 0.05)
 
-get<-get.siggenes(tstep, rsq=0.75, vars="all")
+get<-get.siggenes(tstep, rsq=0.5, vars="all")
 save(tstep, file = Rdata_file)
 pdf(summary_pdf)
 cluster_result = see.genes(get$sig.genes, k = 9, newX11 = FALSE)
