@@ -1,0 +1,110 @@
+---
+title: "MaSigPro"
+author: "luozhihui"
+date: "2019/10/22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r get significant genes, echo=FALSE}
+library("maSigPro")
+Time = c(rep(0, 18), rep(2, 18), rep(4, 18), rep(7, 18), rep(10, 18)) 
+Replicates = rep(1:30, each=3)
+Control = c(rep(1,18), rep(0, 72))
+K27ac = rep(c(rep(1,3), rep(0,15)), 5)
+K27me3 = rep(c(rep(0,3), rep(1,3), rep(0,12)), 5)
+K4me1 = rep(c(rep(0,6), rep(1,3), rep(0,9)), 5)
+K4me3 = rep(c(rep(0,9), rep(1,3), rep(0,6)), 5)
+K9me2 = rep(c(rep(0,12), rep(1,3), rep(0,3)), 5)
+K9me3 = rep(c(rep(0,15), rep(1,3)), 5)
+
+CRC.design = cbind(Time,Replicates, Control, K27ac,K27me3, K4me1, K4me3, K9me2, K9me3)
+#rownames(CRC.design) <- paste("Array", c(1:90), sep = "")
+sample_vector = c()
+for (we in c("ctrl", "2weeks", "4weeks", "7weeks", "10weeks")){
+  for (mark in c("H3K27ac", "H3K27me3", "H3K4me1", "H3K4me3", "H3K9me2", "H3K9me3")){
+    for ( rep in c("1", "2" ,"3")){
+      sample = paste(paste(we, rep, sep="_"), mark, sep="_")
+      sample_vector = c(sample_vector, sample)
+    }
+  }
+}
+rownames(CRC.design) = sample_vector
+d <- make.design.matrix(CRC.design, degree = 3)
+#print(d)
+#training data
+df = read.delim("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/expression_10000_ensembl.txt", sep=",", header=T, row.names=1, check.names=FALSE)
+df = df[1:500, ]
+df = data.matrix(df)
+df = scale(df, center = TRUE, scale = TRUE)
+fit <- p.vector(df, d, Q = 0.05, MT.adjust = "BH", min.obs = 20)
+tstep <- T.fit(fit, step.method = "backward", alfa = 0.05)
+
+get<-get.siggenes(tstep, vars="all")
+cluster_result = see.genes(get$sig.genes, k = 9, newX11 = FALSE)
+
+```
+
+
+```{r test, echo=FALSE}
+library("maSigPro")
+Time = c(rep(2, 18), rep(4, 18), rep(7, 18), rep(10, 18), rep(2, 18), rep(4, 18), rep(7, 18), rep(10, 18)) 
+Replicates = rep(1:48, each=3)
+Control = c(rep(1,72), rep(0, 72))
+K27ac = rep(c(rep(1,3), rep(0,15)), 8)
+K27me3 = rep(c(rep(0,3), rep(1,3), rep(0,12)), 8)
+K4me1 = rep(c(rep(0,6), rep(1,3), rep(0,9)), 8)
+K4me3 = rep(c(rep(0,9), rep(1,3), rep(0,6)), 8)
+K9me2 = rep(c(rep(0,12), rep(1,3), rep(0,3)), 8)
+K9me3 = rep(c(rep(0,15), rep(1,3)), 8)
+
+CRC.design = cbind(Time,Replicates, Control, K27ac,K27me3, K4me1, K4me3, K9me2, K9me3)
+#rownames(CRC.design) <- paste("Array", c(1:90), sep = "")
+sample_vector = c()
+for (we in c("ctrl2", "ctrl4", "ctrl7", "ctrl10", "2weeks", "4weeks", "7weeks", "10weeks")){
+  for (mark in c("H3K27ac", "H3K27me3", "H3K4me1", "H3K4me3", "H3K9me2", "H3K9me3")){
+    for ( rep in c("1", "2" ,"3")){
+      sample = paste(paste(we, rep, sep="_"), mark, sep="_")
+      sample_vector = c(sample_vector, sample)
+    }
+  }
+}
+rownames(CRC.design) = sample_vector
+d <- make.design.matrix(CRC.design, degree = 3)
+
+df = read.delim("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/expression_10000_ensembl.txt", sep=",", header=T, row.names=1, check.names=FALSE)
+df_sub2 =  df[,colnames(df)[1:18]]
+colnames(df_sub2) = rownames(CRC.design)[1:18]
+df_sub4 =  df[,colnames(df)[1:18]]
+colnames(df_sub4) = rownames(CRC.design)[19:36]
+df_sub7 =  df[,colnames(df)[1:18]]
+colnames(df_sub7) = rownames(CRC.design)[37:54]
+df_sub10 =  df[,colnames(df)[1:18]]
+colnames(df_sub10) = rownames(CRC.design)[55:72]
+
+new_df = data.frame(df[, -1:-18], df_sub2, df_sub4, df_sub7, df_sub10, check.names = FALSE) 
+
+new_df = new_df[1:700, ]
+new_df = data.matrix(new_df)
+new_df = scale(new_df, center = TRUE, scale = TRUE)
+fit <- p.vector(new_df, d, Q = 0.05, MT.adjust = "BH", min.obs = 20)
+tstep <- T.fit(fit, step.method = "backward", alfa = 0.05)
+
+get<-get.siggenes(tstep, vars="all")
+
+cluster_result = see.genes(get$sig.genes, k = 9, newX11 = FALSE)
+#cluster_result = see.genes(get$sig.genes$K27acvsControl, dis =d$dis,
+#          cluster.method="hclust" ,cluster.data = 1, k = 9, newX11 = FALSE)
+d
+```
+
+
+```{r design, echo=FALSE}
+data(edesignCT)
+edesignCT
+```

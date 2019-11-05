@@ -1,75 +1,9 @@
 library("maSigPro")
-if (FALSE){
-data(edesign.abiotic)
-data(data.abiotic)
-design <- make.design.matrix(edesign.abiotic, degree = 2)
-fit <- p.vector(data.abiotic, design, Q = 0.05, MT.adjust = "BH", min.obs = 20)
-fit$i
-fit$SELEC
-tstep <- T.fit(fit, step.method = "backward", alfa = 0.05)
-sigs <- get.siggenes(tstep, rsq = 0.6, vars = "groups")
-names(sigs)
-names(sigs$sig.genes)
-names(sigs$sig.genes$ColdvsControl)
-suma2Venn(sigs$summary[, c(2:4)])
-suma2Venn(sigs$summary[, c(1:4)])
-sigs$sig.genes$SaltvsControl$g
-pdf("hello.pdf")
-see.genes(sigs$sig.genes$ColdvsControl, show.fit = F, dis =design$dis,
-          cluster.method="hclust" ,cluster.data = 1, k = 9, newX11 = FALSE)
 
-dev.off()
-STMDE66 <- data.abiotic[rownames(data.abiotic)=="STMDE66", ]
-PlotGroups (STMDE66, edesign = edesign.abiotic)
-PlotGroups (STMDE66, edesign = edesign.abiotic, show.fit = T,  dis = design$dis, groups.vector = design$groups.vector)
-
-
-data(edesignCT)
-
-data(NBdata)
-data(NBdesign)
-d <- make.design.matrix(NBdesign)
-library(MASS)
-NBp <- p.vector(NBdata, d, counts=TRUE)
-NBt <- T.fit(NBp)
-get<-get.siggenes(NBt, vars="all")
-get$summary
-pdf("hello_rna.pdf")
-see.genes(get$sig.genes, k = 4, newX11 = FALSE)
-dev.off()
-NBp <- p.vector(NBdata, d, counts=TRUE, theta=5)
-NBp <- p.vector(NBdata, d, family=poisson() )
-
-
-data(edesignCT)
-
-
-ss.GENE <- function(n, r, var11 = 0.01, var12 = 0.02, var13 = 0.02,
-                     a1 = 0, a2 = 0, a3 = 0) {
-  tc.dat <- NULL
-  for (i in 1:n) {
-    gene <- c(rnorm(r, a1, var11), rnorm(r, a1, var12),
-              rnorm(r, a3, var13))
-    tc.dat <- rbind(tc.dat, gene)
-  }
-  tc.dat }
-
-flat <-ss.GENE(n = 850, r = 30) # flat
-induc <- ss.GENE(n = 50, r = 30, a1 = 0, a2 = 0.2, a3 = 0.6) # induction
-sat <- ss.GENE(n = 50, r = 30, a1 = 0, a2 = 1, a3 = 1.1) # saturation
-ord <- ss.GENE(n = 50, r = 30, a1 = -0.8, a2 = -1, a3 = -1.3) # intercept
-ss.DATA <- rbind(flat, induc,sat,ord)
-rownames(ss.DATA) <- paste("feature", c(1:1000), sep = "")
-colnames(ss.DATA) <- paste("Array", c(1:90), sep = "")
-}
-
-
-
-#our data------------------------------------------------------------
 #construct matrix
 Time = c(rep(0, 18), rep(2, 18), rep(4, 18), rep(7, 18), rep(10, 18)) 
 Replicates = rep(1:30, each=3)
-Control = c(rep(1,18), rep(0, 72))
+Control = c(rep(0,18), rep(0, 72))
 K27ac = rep(c(rep(1,3), rep(0,15)), 5)
 K27me3 = rep(c(rep(0,3), rep(1,3), rep(0,12)), 5)
 K4me1 = rep(c(rep(0,6), rep(1,3), rep(0,9)), 5)
@@ -95,8 +29,8 @@ d
 
 
 #training data
-df = read.delim("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/expression_10000_ensembl.txt", sep=",", header=T, row.names=1, check.names=FALSE)
-df = df[1:700, ]
+df = read.delim("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/total_readCount.txt", sep="\t", header=T, row.names=1, check.names=FALSE)
+#df = df[1:700, ]
 df = data.matrix(df)
 df = scale(df, center = TRUE, scale = TRUE)
 #library(MASS)
@@ -104,13 +38,233 @@ df = scale(df, center = TRUE, scale = TRUE)
 #NBt <- T.fit(NBp)
 fit <- p.vector(df, d, Q = 0.05, MT.adjust = "BH", min.obs = 20)
 tstep <- T.fit(fit, step.method = "backward", alfa = 0.05)
+save(tstep,  file = "/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip/no_control_1030.RData")
 
-get<-get.siggenes(tstep, vars="all")
-pdf("hello_rna_version2.pdf")
+#load("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/test_1029.RData")
+get<-get.siggenes(tstep, rsq=0.93, vars="all")
+pdf("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/new_chip_rsq0.93.pdf")
 cluster_result = see.genes(get$sig.genes, k = 9, newX11 = FALSE)
 dev.off()
+#save.image(tstep,  file = "/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip/test_1029.RData")
 
-#save.image(file = "/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/test.RData")
+
+
+
+
+i = 1
+clu1 = cluster_result$cut[cluster_result$cut == i]
+#clu9 = cluster_result$cut[cluster_result$cut == 9]
+#clu15 = cluster_result$cut[cluster_result$cut == 15]
+#deg_list = c(names(clu8), names(clu9), names(clu15))
+
+library(org.Mm.eg.db)
+library("clusterProfiler")
+ego <- enrichGO(gene          = names(clu1),
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+
+table_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip/chip_", i , ".txt", sep="")
+write.table(ego@result, table_name, sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+pdf_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip/pdf_", i , ".pdf", sep="")
+pdf(pdf_name, width=10, height=10)
+dotplot(ego, showCategory=15)
+dev.off()
+
+
+i = 2
+clu1 = cluster_result$cut[cluster_result$cut == i]
+#clu9 = cluster_result$cut[cluster_result$cut == 9]
+#clu15 = cluster_result$cut[cluster_result$cut == 15]
+#deg_list = c(names(clu8), names(clu9), names(clu15))
+
+library(org.Mm.eg.db)
+library("clusterProfiler")
+ego <- enrichGO(gene          = names(clu1),
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+
+table_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip/chip_", i , ".txt", sep="")
+write.table(ego@result, table_name, sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+pdf_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip/pdf_", i , ".pdf", sep="")
+pdf(pdf_name, width=10, height=10)
+dotplot(ego, showCategory=15)
+dev.off()
+
+
+i = 3
+clu1 = cluster_result$cut[cluster_result$cut == i]
+#clu9 = cluster_result$cut[cluster_result$cut == 9]
+#clu15 = cluster_result$cut[cluster_result$cut == 15]
+#deg_list = c(names(clu8), names(clu9), names(clu15))
+
+library(org.Mm.eg.db)
+library("clusterProfiler")
+ego <- enrichGO(gene          = names(clu1),
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+
+table_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip/chip_", i , ".txt", sep="")
+write.table(ego@result, table_name, sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+pdf_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip/pdf_", i , ".pdf", sep="")
+pdf(pdf_name, width=10, height=10)
+dotplot(ego, showCategory=15)
+dev.off()
+
+
+i = 4
+clu1 = cluster_result$cut[cluster_result$cut == i]
+#clu9 = cluster_result$cut[cluster_result$cut == 9]
+#clu15 = cluster_result$cut[cluster_result$cut == 15]
+#deg_list = c(names(clu8), names(clu9), names(clu15))
+
+library(org.Mm.eg.db)
+library("clusterProfiler")
+ego <- enrichGO(gene          = names(clu1),
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+
+table_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip/chip_", i , ".txt", sep="")
+write.table(ego@result, table_name, sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+pdf_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip/pdf_", i , ".pdf", sep="")
+pdf(pdf_name, width=10, height=10)
+dotplot(ego, showCategory=15)
+dev.off()
+
+
+i = 5
+clu1 = cluster_result$cut[cluster_result$cut == i]
+#clu9 = cluster_result$cut[cluster_result$cut == 9]
+#clu15 = cluster_result$cut[cluster_result$cut == 15]
+#deg_list = c(names(clu8), names(clu9), names(clu15))
+
+library(org.Mm.eg.db)
+library("clusterProfiler")
+ego <- enrichGO(gene          = names(clu1),
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+
+table_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip/chip_", i , ".txt", sep="")
+write.table(ego@result, table_name, sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+pdf_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip/pdf_", i , ".pdf", sep="")
+pdf(pdf_name, width=10, height=10)
+dotplot(ego, showCategory=15)
+dev.off()
+
+
+i = 6
+clu1 = cluster_result$cut[cluster_result$cut == i]
+#clu9 = cluster_result$cut[cluster_result$cut == 9]
+#clu15 = cluster_result$cut[cluster_result$cut == 15]
+#deg_list = c(names(clu8), names(clu9), names(clu15))
+
+library(org.Mm.eg.db)
+library("clusterProfiler")
+ego <- enrichGO(gene          = names(clu1),
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+
+table_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip/chip_", i , ".txt", sep="")
+write.table(ego@result, table_name, sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+pdf_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip/pdf_", i , ".pdf", sep="")
+pdf(pdf_name, width=10, height=10)
+dotplot(ego, showCategory=15)
+dev.off()
+
+
+i = 7
+clu1 = cluster_result$cut[cluster_result$cut == i]
+#clu9 = cluster_result$cut[cluster_result$cut == 9]
+#clu15 = cluster_result$cut[cluster_result$cut == 15]
+#deg_list = c(names(clu8), names(clu9), names(clu15))
+
+library(org.Mm.eg.db)
+library("clusterProfiler")
+ego <- enrichGO(gene          = names(clu1),
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+
+table_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip/chip_", i , ".txt", sep="")
+write.table(ego@result, table_name, sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+pdf_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip/pdf_", i , ".pdf", sep="")
+pdf(pdf_name, width=10, height=10)
+dotplot(ego, showCategory=15)
+dev.off()
+
+
+i = 8
+clu1 = cluster_result$cut[cluster_result$cut == i]
+#clu9 = cluster_result$cut[cluster_result$cut == 9]
+#clu15 = cluster_result$cut[cluster_result$cut == 15]
+#deg_list = c(names(clu8), names(clu9), names(clu15))
+
+library(org.Mm.eg.db)
+library("clusterProfiler")
+ego <- enrichGO(gene          = names(clu1),
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+
+table_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip/chip_", i , ".txt", sep="")
+write.table(ego@result, table_name, sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+pdf_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip/pdf_", i , ".pdf", sep="")
+pdf(pdf_name, width=10, height=10)
+dotplot(ego, showCategory=15)
+dev.off()
+
+
+i = 9
+clu1 = cluster_result$cut[cluster_result$cut == i]
+#clu9 = cluster_result$cut[cluster_result$cut == 9]
+#clu15 = cluster_result$cut[cluster_result$cut == 15]
+#deg_list = c(names(clu8), names(clu9), names(clu15))
+
+library(org.Mm.eg.db)
+library("clusterProfiler")
+ego <- enrichGO(gene          = names(clu1),
+                keyType       = "ENSEMBL",
+                OrgDb         = "org.Mm.eg.db",
+                ont           = "ALL",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.01)
+
+table_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip/chip_", i , ".txt", sep="")
+write.table(ego@result, table_name, sep="\t", quote=F, row.names=F, col.names = T, na="NA", eol="\n")
+pdf_name = paste("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip/pdf_", i , ".pdf", sep="")
+pdf(pdf_name, width=10, height=10)
+dotplot(ego, showCategory=15)
+dev.off()
 
 
 
