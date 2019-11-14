@@ -42,13 +42,13 @@ peaks_7week = peak_region[match(diff_genes_7w, peak_region$ID),]
 peaks_4week = peak_region[match(diff_genes_4w, peak_region$ID),]
 peaks_2week = peak_region[match(diff_genes_2w, peak_region$ID),]
 #write.table(peaks_10week, out_path, sep="\t", quote=F, row.names=F, col.names = F, na="NA", eol="\n")
-out_path = paste(outputdir, "/", state, "_", marker, "_10week.bed", sep="")
+out_path = paste(outputdir, "/", state, "_", marker, "_10weeks.bed", sep="")
 write.table(peaks_10week, out_path, sep="\t", quote=F, row.names=F, col.names = F, na="NA", eol="\n")
-out_path = paste(outputdir, "/", state, "_", marker, "_7week.bed", sep="")
+out_path = paste(outputdir, "/", state, "_", marker, "_7weeks.bed", sep="")
 write.table(peaks_7week, out_path, sep="\t", quote=F, row.names=F, col.names = F, na="NA", eol="\n")
-out_path = paste(outputdir, "/", state, "_", marker, "_4week.bed", sep="")
+out_path = paste(outputdir, "/", state, "_", marker, "_4weeks.bed", sep="")
 write.table(peaks_4week, out_path, sep="\t", quote=F, row.names=F, col.names = F, na="NA", eol="\n")
-out_path = paste(outputdir, "/", state, "_", marker, "_2week.bed", sep="")
+out_path = paste(outputdir, "/", state, "_", marker, "_2weeks.bed", sep="")
 write.table(peaks_2week, out_path, sep="\t", quote=F, row.names=F, col.names = F, na="NA", eol="\n")
 }
 
@@ -68,4 +68,9 @@ fold_change_peaks(marker = "H3K9me3", state = "heterochromatin")
  这个脚本需要count文件做输入，我们需要做两个count文件。
  这个需要用到：/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/Chromhmm/step5_calculate_read_count.py程序。
  
+ 
+ 
+ 
+##combine the nfr and fold change peaks
+this is invoke the script TF
  
