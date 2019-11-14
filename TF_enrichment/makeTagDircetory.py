@@ -53,11 +53,9 @@ def add_100bp():
                     "findPeaks Score Total Tags", "Control Tags (normalized to IP Experiment)", "Fold Change vs Control", "p-value vs Control" , "Fold Change vs Local", "p-value vs Local" , "Clonal Fold Change"], comment='#')
             df["start"] = [item - 100 for item in df["start"]]
             df["end"] = [item + 100 for item in df["end"]]
-            df.to_csv(os.path.join(nfr_dir, "%s_%s" % (we, mark), "peaks.400.txt"), sep="\t", header=True,  index=False)
-            mv_files = os.path.join(nfr_dir, "%s_%s" % (we, mark), "peaks.400.txt")
-            cmd = "scp zhluo@211.69.141.147:%s /home/zhihl/Project/CRC/Chip_analysis/TF_fold_change/nfr_400_peaks/" % £¨mv_files£©
-                    
-    
+            df.to_csv(os.path.join(nfr_dir, "%s_%s_peaks.400.txt" % (we, mark)), sep="\t", header=True,  index=False)
+            
+            
 def transfer_file():
     nfr_dir = "/home/zhluo/zhao/create_tags"
     weeks = ["2weeks", "4weeks", "7weeks", "10weeks"]
@@ -65,8 +63,9 @@ def transfer_file():
     
     for we in weeks:
         for mark in markers:
-            mv_files = os.path.join(nfr_dir, "%s_%s" % (we, mark), "peaks.400.txt")
-            cmd = "scp zhluo@211.69.141.147:%s /home/zhihl/Project/CRC/Chip_analysis/TF_fold_change/nfr_400_peaks/" % £¨mv_files£©
+            mv_files = os.path.join(nfr_dir, "%s_%s_peaks.400.txt" % (we, mark))
+            cmd = "scp zhluo@211.69.141.147:%s /home/zhihl/Project/CRC/Chip_analysis/TF_fold_change/nfr_400_peaks/" % (mv_files)
+            os.system(cmd)
     
 
 
@@ -79,9 +78,9 @@ if __name__=="__main__":
     #step2
     #findPeaks()
     #step3
-    #add_100bp()
+    add_100bp()
     #step4:
-    transfer_file()
+    #transfer_file()
     
     
                 
