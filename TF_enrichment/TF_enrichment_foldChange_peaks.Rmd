@@ -1,0 +1,71 @@
+---
+title: "TF_enrichment_foldChange_peaks"
+author: "luozhihui"
+date: "2019/11/11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+diff_gene_for_chip = function(df_all, col_1, col_2, fold_change=1 ){
+  week_df = df_all[,c(col_1, col_2)]
+  diff_week_up = rownames(na.omit(week_df[week_df[,1] > fold_change & week_df[,2] < 0.01, ]))
+  diff_week_down = rownames(na.omit(week_df[week_df[,1] < -(fold_change) & week_df[,2] < 0.01, ]))
+  return (c(diff_week_up, diff_week_down))
+}
+```
+
+## R Markdown
+
+首先是第一步，这一步是要筛选出fold change >= 2的peak的peaks出来。  
+我们根据之前的差异表达可以直接提出来。
+需要的前提文件是两个一个是总的差异表达的peak的信息。  
+二是peak gene的注释文件。  
+也就是函数里面的df_all 和 peak_region文件。  
+
+```{r TF fold change peaks, include=FALSE}
+
+#out_dir = "/home/zhihl/Project/CRC/Chip_analysis/TF_fold_change"
+fold_change_peaks = function(marker, state, outputdir = "/home/zhihl/Project/CRC/Chip_analysis/TF_fold_change"){
+
+df_all = read.delim(paste("/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/all_diff_data_", marker, ".txt", sep=""),sep = "\t", header=T)
+peak_region_file = paste("/home/zhihl/Project/CRC/Chip_analysis/peak_dir_0821/", state, "/", state, ".peak.unique.ID.gene_name.bed", sep="")
+peak_region = read.delim(peak_region_file, sep = "\t", header=T)
+
+diff_genes_10w = diff_gene_for_chip(df_all, "log2FoldChange.10wkVSctrl", "padj.10wkVSctrl", 1)
+diff_genes_7w = diff_gene_for_chip(df_all, "log2FoldChange.7wkVSctrl", "padj.7wkVSctrl", 1)
+diff_genes_4w = diff_gene_for_chip(df_all, "log2FoldChange.4wkVSctrl", "padj.4wkVSctrl", 1)
+diff_genes_2w = diff_gene_for_chip(df_all, "log2FoldChange.2wkVSctrl", "padj.2wkVSctrl", 1)
+
+peaks_10week = peak_region[match(diff_genes_10w, peak_region$ID),]
+peaks_7week = peak_region[match(diff_genes_7w, peak_region$ID),]
+peaks_4week = peak_region[match(diff_genes_4w, peak_region$ID),]
+peaks_2week = peak_region[match(diff_genes_2w, peak_region$ID),]
+#write.table(peaks_10week, out_path, sep="\t", quote=F, row.names=F, col.names = F, na="NA", eol="\n")
+out_path = paste(outputdir, "/", state, "_", marker, "_10week.bed", sep="")
+write.table(peaks_10week, out_path, sep="\t", quote=F, row.names=F, col.names = F, na="NA", eol="\n")
+out_path = paste(outputdir, "/", state, "_", marker, "_7week.bed", sep="")
+write.table(peaks_7week, out_path, sep="\t", quote=F, row.names=F, col.names = F, na="NA", eol="\n")
+out_path = paste(outputdir, "/", state, "_", marker, "_4week.bed", sep="")
+write.table(peaks_4week, out_path, sep="\t", quote=F, row.names=F, col.names = F, na="NA", eol="\n")
+out_path = paste(outputdir, "/", state, "_", marker, "_2week.bed", sep="")
+write.table(peaks_2week, out_path, sep="\t", quote=F, row.names=F, col.names = F, na="NA", eol="\n")
+}
+
+
+fold_change_peaks(marker = "H3K27ac", state = "enhancer")
+#fold_change_peaks(marker = "H3K4me1", state = "enhancer")
+fold_change_peaks(marker = "H3K27me3", state = "repressed")
+fold_change_peaks(marker = "H3K4me3", state = "promoter")
+#fold_change_peaks(marker = "H3K9me2", state = "heterochromatin")
+fold_change_peaks(marker = "H3K9me3", state = "heterochromatin")
+```
+
+##annotate the peak bed files
+ 接下来的工作是注释这些peak文件我们先把文件传输到147上面去。
+ 这里有一个问题是，我们只做了四个信号的结果，还有2个信号也应该做一下。
+ 做另外两个信号，使用的程序是/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/Chip_diff/step6_DEG_analysis_for_chip_data.py
+ 这个脚本需要count文件做输入，我们需要做两个count文件。
+ 这个需要用到：/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/Chromhmm/step5_calculate_read_count.py程序。
+ 
+ 
