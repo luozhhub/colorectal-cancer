@@ -32,7 +32,7 @@ class get_read_count(element_peaks):
             df.to_csv(os.path.join(element_dir, ele + "/" + ele + ".peak.unique.ID.bed"), sep="\t", header=None, index=None)
         
 
-    def read_count(self):
+    def read_count(self, element=None, marker=None):
         """
         this function is used to calculate the read count
         the add peak id file can be :/home/zhluo/Project/CRC/data_nazhang/step27_pseudo_diff/peak_name_list/enhancer.peak.id.bed
@@ -43,8 +43,9 @@ class get_read_count(element_peaks):
             os.makedirs(outputDir)
         pseudo_dir = "/home/zhluo/Project/CRC/data_nazhang/step26_pseudo_bed/bedfiles/"
 
-        element = ["enhancer", "promoter", "repressed", "heterochromatin"]
-        marker = ["H3K27ac", "H3K4me3", "H3K27me3", "H3K9me3"]
+        #element = ["enhancer", "promoter", "repressed", "heterochromatin"]
+        #marker = ["H3K27ac", "H3K4me3", "H3K27me3", "H3K9me3"]
+        
         element_dict = dict(zip(element, marker))
         element_dir = "/home/zhluo/Project/CRC/data_nazhang/step32_element/"       
         for ele in element:
@@ -62,15 +63,15 @@ class get_read_count(element_peaks):
                 cmd = "bedtools intersect -a %s -b %s  -c > %s" % (peak_file, select_file, outFile)
                 self.run(cmd)
             
-    def merge_samples(self):
+    def merge_samples(self, element=None, marker=None):
         """
         this function is used to merge different sample to one kind of marker table
         
         """
         psudo_bed_dir = "/home/zhluo/Project/CRC/data_nazhang/step33_pseudo_diff/read_count_bed"
         group_dict = {}
-        element = ["enhancer", "promoter", "repressed", "heterochromatin"]
-        marker = ["H3K27ac", "H3K4me3", "H3K27me3", "H3K9me3"]
+        #element = ["enhancer", "promoter", "repressed", "heterochromatin"]
+        #marker = ["H3K27ac", "H3K4me3", "H3K27me3", "H3K9me3"]
         #element_dict = dict(zip(element, marker))
         
         for ele in marker:
@@ -87,5 +88,10 @@ class get_read_count(element_peaks):
 if __name__ == "__main__":
     getReadCount = get_read_count()
     #getReadCount.add_peak_id()
-    #getReadCount.read_count()
-    getReadCount.merge_samples()
+    #run in 201908
+    """
+    getReadCount.read_count(element=["enhancer", "promoter", "repressed", "heterochromatin"], marker=["H3K27ac", "H3K4me3", "H3K27me3", "H3K9me3"])
+    getReadCount.merge_samples(element=["enhancer", "promoter", "repressed", "heterochromatin"], marker=["H3K27ac", "H3K4me3", "H3K27me3", "H3K9me3"])
+    """
+    getReadCount.read_count(element=["enhancer", "heterochromatin"], marker=["H3K4me1", "H3K9me2"])
+    getReadCount.merge_samples(element=["enhancer", "heterochromatin"], marker=["H3K4me1", "H3K9me2"])
