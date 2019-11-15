@@ -79,7 +79,7 @@ if __name__=="__main__":
     #step2
     #findPeaks()
     #step3
-    add_100bp()
+    #add_100bp()
     #step4:
     transfer_file()
     

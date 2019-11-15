@@ -20,8 +20,8 @@ class DEG_chip():
         p.wait()
         return p
         
-    def run_DEG(self):
-        marker = ["H3K27ac", "H3K4me3", "H3K27me3", "H3K9me3"]
+    def run_DEG(self,marker):
+#        marker = ["H3K27ac", "H3K4me3", "H3K27me3", "H3K9me3"]
         count_table_dir = "/home/zhihl/Project/CRC/Chip_analysis/dff/version0821"
         for one_mark in marker:
             count_table = os.path.join(count_table_dir, one_mark + "_count_table.txt")
@@ -33,6 +33,6 @@ class DEG_chip():
 
 if __name__ == "__main__":
     DEGChip = DEG_chip()
-    DEGChip.run_DEG()            
+    DEGChip.run_DEG(marker=["H3K4me1","H3K9me2"])            
             
 

@@ -53,12 +53,12 @@ write.table(peaks_2week, out_path, sep="\t", quote=F, row.names=F, col.names = F
 }
 
 
-fold_change_peaks(marker = "H3K27ac", state = "enhancer")
-#fold_change_peaks(marker = "H3K4me1", state = "enhancer")
-fold_change_peaks(marker = "H3K27me3", state = "repressed")
-fold_change_peaks(marker = "H3K4me3", state = "promoter")
-#fold_change_peaks(marker = "H3K9me2", state = "heterochromatin")
-fold_change_peaks(marker = "H3K9me3", state = "heterochromatin")
+#fold_change_peaks(marker = "H3K27ac", state = "enhancer")
+fold_change_peaks(marker = "H3K4me1", state = "enhancer")
+#fold_change_peaks(marker = "H3K27me3", state = "repressed")
+#fold_change_peaks(marker = "H3K4me3", state = "promoter")
+fold_change_peaks(marker = "H3K9me2", state = "heterochromatin")
+#fold_change_peaks(marker = "H3K9me3", state = "heterochromatin")
 ```
 
 ##annotate the peak bed files
