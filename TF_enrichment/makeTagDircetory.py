@@ -53,8 +53,8 @@ def add_100bp():
                     "findPeaks Score Total Tags", "Control Tags (normalized to IP Experiment)", "Fold Change vs Control", "p-value vs Control" , "Fold Change vs Local", "p-value vs Local" , "Clonal Fold Change"], comment='#')
             df["start"] = [item - 100 for item in df["start"]]
             df["end"] = [item + 100 for item in df["end"]]
-            df.drop(["PeakID"], inpulace=True)
-            df.to_csv(os.path.join(nfr_dir, "%s_%s_peaks.400.txt" % (we, mark)), sep="\t", header=True,  index=False)
+            df.drop(["PeakID"], inplace=True, axis=1)
+            df.to_csv(os.path.join(nfr_dir, "%s_%s_peaks.400.txt" % (we, mark)), sep="\t", header=False,  index=False)
             
             
 def transfer_file():
@@ -81,7 +81,7 @@ if __name__=="__main__":
     #step3
     #add_100bp()
     #step4:
-    transfer_file()
+    #transfer_file()
     
     
                 
