@@ -1,7 +1,7 @@
 ---
-title: "H3K27me3_maSigPro"
+title: "H3K4me3"
 author: "luozhihui"
-date: "2019/11/15"
+date: "2019/11/16"
 output: html_document
 ---
 
@@ -9,8 +9,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## H3K27me3
-```{r H3K27me3, include=FALSE}
+## H3K4me3
+```{r H3K4me3, include=FALSE}
 #function
 gene_detail = read.delim("/home/zhihl/Project/CRC/RNA_analysis/mart_export_mouse_geneid_symbol.txt", sep="\t", header=T)
 essemble_to_entrez = function (deg_list){
@@ -41,7 +41,7 @@ Control = c(rep(0,15), rep(1, 15))
 histone_mark = c(rep(1,15), rep(0,15))
 
 
-marker = "H3K27me3"
+marker = "H3K4me3"
 
 CRC.design = cbind(Time,Replicates, Control, histone_mark)
 #rownames(CRC.design) <- paste("Array", c(1:90), sep = "")

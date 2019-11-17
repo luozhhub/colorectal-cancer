@@ -32,10 +32,10 @@ df_all = read.delim(paste("/home/zhihl/Project/CRC/Chip_analysis/dff/version0821
 peak_region_file = paste("/home/zhihl/Project/CRC/Chip_analysis/peak_dir_0821/", state, "/", state, ".peak.unique.ID.gene_name.bed", sep="")
 peak_region = read.delim(peak_region_file, sep = "\t", header=T)
 
-diff_genes_10w = diff_gene_for_chip(df_all, "log2FoldChange.10wkVSctrl", "padj.10wkVSctrl", 1)
-diff_genes_7w = diff_gene_for_chip(df_all, "log2FoldChange.7wkVSctrl", "padj.7wkVSctrl", 1)
-diff_genes_4w = diff_gene_for_chip(df_all, "log2FoldChange.4wkVSctrl", "padj.4wkVSctrl", 1)
-diff_genes_2w = diff_gene_for_chip(df_all, "log2FoldChange.2wkVSctrl", "padj.2wkVSctrl", 1)
+diff_genes_10w = diff_gene_for_chip(df_all, "log2FoldChange.10wkVSctrl", "padj.10wkVSctrl", 0.58)
+diff_genes_7w = diff_gene_for_chip(df_all, "log2FoldChange.7wkVSctrl", "padj.7wkVSctrl", 0.58)
+diff_genes_4w = diff_gene_for_chip(df_all, "log2FoldChange.4wkVSctrl", "padj.4wkVSctrl", 0.58)
+diff_genes_2w = diff_gene_for_chip(df_all, "log2FoldChange.2wkVSctrl", "padj.2wkVSctrl", 0.58)
 
 peaks_10week = peak_region[match(diff_genes_10w, peak_region$ID),]
 peaks_7week = peak_region[match(diff_genes_7w, peak_region$ID),]
@@ -53,12 +53,12 @@ write.table(peaks_2week, out_path, sep="\t", quote=F, row.names=F, col.names = F
 }
 
 
-#fold_change_peaks(marker = "H3K27ac", state = "enhancer")
+fold_change_peaks(marker = "H3K27ac", state = "enhancer")
 fold_change_peaks(marker = "H3K4me1", state = "enhancer")
-#fold_change_peaks(marker = "H3K27me3", state = "repressed")
-#fold_change_peaks(marker = "H3K4me3", state = "promoter")
+fold_change_peaks(marker = "H3K27me3", state = "repressed")
+fold_change_peaks(marker = "H3K4me3", state = "promoter")
 fold_change_peaks(marker = "H3K9me2", state = "heterochromatin")
-#fold_change_peaks(marker = "H3K9me3", state = "heterochromatin")
+fold_change_peaks(marker = "H3K9me3", state = "heterochromatin")
 ```
 
 ##annotate the peak bed files

@@ -435,14 +435,14 @@ if __name__ == "__main__":
     for i in `ls ./*.pbs` ;do qsub -q batch -V -l nodes=1:ppn=10 $i ; done
     """
     #multiBigwigSummary
-    gene_cal.multiBigwigSummary(markers=["H3K27ac"], bs="H3K27ac.bed", bed_file="/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/new_bed_for_bw/gene_tss_100000.new.bed")
-    gene_cal.multiBigwigSummary(markers=["H3K4me1"], bs="H3K4me1.bed", bed_file="/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/new_bed_for_bw/gene_tss_100000.new.bed")
-    gene_cal.multiBigwigSummary(markers=["H3K9me2"], bs="H3K9me2.bed", bed_file="/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/new_bed_for_bw/gene_tss_10000.new.bed")
-    gene_cal.multiBigwigSummary(markers=["H3K9me3"], bs="H3K9me3.bed", bed_file="/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/new_bed_for_bw/gene_tss_10000.new.bed")
-    gene_cal.multiBigwigSummary(markers=["H3K9me2", "H3K9me3"], bs="K92_K93.bed", bed_file="/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/new_bed_for_bw/gene_tss_10000.new.bed")
-    gene_cal.multiBigwigSummary(markers=["H3K27ac", "H3K4me1"], bs="enhancer.bed", bed_file="/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/new_bed_for_bw/gene_tss_100000.new.bed")
-    gene_cal.multiBigwigSummary(markers=["H3K4me3"], bs="H3K4me3.bed", bed_file="/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/gene_tss_2000.new.bed")
-    gene_cal.multiBigwigSummary(markers=["H3K27me3"], bs="H3K27me3.bed", bed_file="/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/gene_body_2k.new.bed")
+    #gene_cal.multiBigwigSummary(markers=["H3K27ac"], bs="H3K27ac.bed", bed_file="/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/new_bed_for_bw/gene_tss_100000.new.bed")
+    #gene_cal.multiBigwigSummary(markers=["H3K4me1"], bs="H3K4me1.bed", bed_file="/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/new_bed_for_bw/gene_tss_100000.new.bed")
+    #gene_cal.multiBigwigSummary(markers=["H3K9me2"], bs="H3K9me2.bed", bed_file="/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/new_bed_for_bw/gene_tss_10000.new.bed")
+    #gene_cal.multiBigwigSummary(markers=["H3K9me3"], bs="H3K9me3.bed", bed_file="/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/new_bed_for_bw/gene_tss_10000.new.bed")
+    #gene_cal.multiBigwigSummary(markers=["H3K9me2", "H3K9me3"], bs="K92_K93.bed", bed_file="/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/new_bed_for_bw/gene_tss_10000.new.bed")
+    #gene_cal.multiBigwigSummary(markers=["H3K27ac", "H3K4me1"], bs="enhancer.bed", bed_file="/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/new_bed_for_bw/gene_tss_100000.new.bed")
+    #gene_cal.multiBigwigSummary(markers=["H3K4me3"], bs="H3K4me3.bed", bed_file="/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/gene_tss_2000.new.bed")
+    #gene_cal.multiBigwigSummary(markers=["H3K27me3"], bs="H3K27me3.bed", bed_file="/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/gene_body_2k.new.bed")
     """
     qsub -q batch -V -l nodes=1:ppn=26 ./run_multiBamSummary_H3K27ac.bed.pbs
     qsub -q batch -V -l nodes=1:ppn=26 ./run_multiBamSummary_H3K4me1.bed.pbs
@@ -460,5 +460,7 @@ if __name__ == "__main__":
     grep -v "chrM" ./gene_tss_2000.bed > ./gene_tss_2000.new.bed
     """
     
-    gene_cal.merge_single_marker_without_input(marker="H3K27ac")
-    gene_cal.merge_single_marker_without_input(marker="H3K4me1")
+    #gene_cal.merge_single_marker_without_input(marker="H3K27ac")
+    #gene_cal.merge_single_marker_without_input(marker="H3K4me1")
+    
+    gene_cal.get_TSS(distence=0)
