@@ -1,0 +1,69 @@
+---
+title: "step13_patternAnalysis"
+author: "luozhihui"
+date: "2019/11/16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##use RNA-seq classes see RNA-expression and chip-seq expression value
+我们使用RNA的分类结果首先看看RNA的热图
+
+```{r rna expression, include=FALSE}
+library(pheatmap)
+#df_all = read.delim("/home/zhihl/Project/CRC/RNA_analysis/all_diff_data.txt",sep = "\t", header=T, row.names=1)
+df_all = read.delim("/home/zhihl/Project/CRC/Chip_analysis/dff/version0821/final_result/genes.fpkm_table", sep="\t", header=T, row.names=1, check.names = FALSE)
+
+
+gene_list_1 = read.delim("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/rna/rna_gene_list_cluster1.txt",sep = "\t", header=T, row.names=1)
+gene_list_2 = read.delim("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/rna/rna_gene_list_cluster2.txt",sep = "\t", header=T, row.names=1)
+gene_list_3 = read.delim("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/rna/rna_gene_list_cluster3.txt",sep = "\t", header=T, row.names=1)
+gene_list_4 = read.delim("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/rna/rna_gene_list_cluster4.txt",sep = "\t", header=T, row.names=1)
+gene_list_5 = read.delim("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/rna/rna_gene_list_cluster5.txt",sep = "\t", header=T, row.names=1)
+gene_list_6 = read.delim("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/rna/rna_gene_list_cluster6.txt",sep = "\t", header=T, row.names=1)
+gene_list_7 = read.delim("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/rna/rna_gene_list_cluster7.txt",sep = "\t", header=T, row.names=1)
+gene_list_8 = read.delim("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/rna/rna_gene_list_cluster8.txt",sep = "\t", header=T, row.names=1)
+gene_list_9 = read.delim("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/rna/rna_gene_list_cluster9.txt",sep = "\t", header=T, row.names=1)
+
+df_sub = df_all[,1:15]
+gene_select_id = c(rownames(gene_list_1),rownames(gene_list_3),rownames(gene_list_4),rownames(gene_list_5),rownames(gene_list_6),rownames(gene_list_7),rownames(gene_list_8),rownames(gene_list_9))
+
+df_sub = df_sub[gene_select_id,]
+#annotation_row=data.frame(Type=c(rep(paste("cluster1 n=", nrow(gene_list_1), ""), nrow(gene_list_1)), rep(paste("cluster2 n=", nrow(gene_list_2), ""), nrow(gene_list_2)), rep(paste("cluster3 n=", nrow(gene_list_3), ""), nrow(gene_list_3)), rep(paste("cluster4 n=", nrow(gene_list_4), ""), nrow(gene_list_4)), rep(paste("cluster5 n=", nrow(gene_list_5), ""), nrow(gene_list_5)), rep(paste("cluster6 n=", nrow(gene_list_6), ""), nrow(gene_list_6)), rep(paste("cluster7 n=", nrow(gene_list_7), ""), nrow(gene_list_7)), rep(paste("cluster8 n=", nrow(gene_list_8), ""), nrow(gene_list_8)), rep(paste("cluster9 n=", nrow(gene_list_9), ""), nrow(gene_list_9))), row.names = rownames(df_sub))
+
+annotation_row=data.frame(Cluster=c(rep(paste("cluster1 n=", nrow(gene_list_1), ""), nrow(gene_list_1)), rep(paste("cluster3 n=", nrow(gene_list_3), ""), nrow(gene_list_3)), rep(paste("cluster4 n=", nrow(gene_list_4), ""), nrow(gene_list_4)), rep(paste("cluster5 n=", nrow(gene_list_5), ""), nrow(gene_list_5)), rep(paste("cluster6 n=", nrow(gene_list_6), ""), nrow(gene_list_6)), rep(paste("cluster7 n=", nrow(gene_list_7), ""), nrow(gene_list_7)), rep(paste("cluster8 n=", nrow(gene_list_8), ""), nrow(gene_list_8)), rep(paste("cluster9 n=", nrow(gene_list_9), ""), nrow(gene_list_9))), row.names = rownames(df_sub))
+annotation_col= data.frame(Group = factor(c(rep("Ctrl", 3), rep("Week2", 3), rep("Week4", 3), rep("Week7", 3), rep("Week10", 3)), levels = c("Ctrl", "Week2", "Week4", "Week7", "Week10")))
+row.names(annotation_col) <- colnames(df_sub)
+
+anno_colors = list(a = c())
+
+pdf("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/rna/rna_heatmap.pdf")
+pheatmap(df_sub, cluster_rows = F, show_rownames = F, cluster_cols = F, scale = "row",annotation_row = annotation_row,color =colorRampPalette(c("#87CEFA", "white", "#CC2121"))(100), annotation_col = annotation_col)
+#          color =  c(colorRampPalette(colors = c("#E0F3F8","#FDAE61"))(50), colorRampPalette(colors = c("#FDAE61","#D73027"))(50)))
+dev.off()
+
+```
+
+
+##use deeptools draw the chip-seq picture based one the RNA cluster
+
+
+computeMatrix scale-regions -S /home/lchen/ICM/result/chip_seq_new/deep_bw/H3K27me3_SCNT_4c.withinput.bw -R /home/lchen/ICM/result/chip_seq_new/deg/gene_FRR  /home/lchen/ICM/result/cheq_new/deg/gene_PRR  /home/lchen/ICM/result/chip_seq_new/deg/gene_RRR  -p 10 --beforeRegionStartLength 5000 --regionBodyLength 15000 --afterRegionStartLength 5000 --skipZeros -o /homeen/ICM/result/chip_seq_new/deep_bw/H3K27me3_SCNT_4c.withinput_gene.matrix.gz &&  plotProfile -m  /home/lchen/ICM/result/chip_seq_new/deep_bw/H3K27me3_SCNT_4c.withinput_gene.matrix.gz  /home/lchen/ICM/result/chip_seq_new/deep_bw/H3K27me3_SCNT_4c.withinput_gene.pdf  --outFileNameData  /home/lchen/ICM/result/chip_seq_new/deep_bw/H3K27me3_SCNT_4c.withinput_gene.table
+
+```{r chip_seq FPKM, include=FALSE}
+gene_list_H3K27me3_1 = read.delim("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip_v2/H3K27me3/H3K27me3_1_gene_list.txt",sep = "\t", header=T, row.names=1)
+gene_list_H3K27me3_2 = read.delim("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip_v2/H3K27me3/H3K27me3_1_gene_list.txt",sep = "\t", header=T, row.names=1)
+gene_list_H3K27me3_3 = read.delim("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip_v2/H3K27me3/H3K27me3_1_gene_list.txt",sep = "\t", header=T, row.names=1)
+gene_list_H3K27me3_4 = read.delim("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip_v2/H3K27me3/H3K27me3_1_gene_list.txt",sep = "\t", header=T, row.names=1)
+gene_list_H3K27me3_5 = read.delim("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip_v2/H3K27me3/H3K27me3_1_gene_list.txt",sep = "\t", header=T, row.names=1)
+gene_list_H3K27me3_6 = read.delim("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip_v2/H3K27me3/H3K27me3_1_gene_list.txt",sep = "\t", header=T, row.names=1)
+gene_list_H3K27me3_7 = read.delim("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip_v2/H3K27me3/H3K27me3_1_gene_list.txt",sep = "\t", header=T, row.names=1)
+gene_list_H3K27me3_8 = read.delim("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip_v2/H3K27me3/H3K27me3_1_gene_list.txt",sep = "\t", header=T, row.names=1)
+gene_list_H3K27me3_9 = read.delim("/home/zhihl/Project/CRC/Chip_analysis/MaSigPro/chip_v2/H3K27me3/H3K27me3_1_gene_list.txt",sep = "\t", header=T, row.names=1)
+
+
+
+```
