@@ -27,6 +27,8 @@ class cal_gene_marks():
         print(len(set(list(df["ensembl"]))))
         
         df.to_csv("/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/gene_body_2k.bed", sep="\t", header=False,  index=False)
+        df.drop('strand', axis=1, inplace=True)
+        df.to_csv("/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/gene_body_0k.bed", sep="\t", header=False,  index=False)
     
     
     def get_TSS(self, distence=2000):
@@ -41,7 +43,10 @@ class cal_gene_marks():
         #print(df_sub.groupby("gene_id")["chr"].first())
         
         df_sub["start"] = [item - distence for item in df_sub["start"]]
-        df_sub["end"] = [item + distence for item in df_sub["end"]]
+        if distence == 1:
+            df_sub["end"] = [item + distence for item in df_sub["start"]]
+        else:
+            df_sub["end"] = [item + distence for item in df_sub["end"]]
         df_sub.to_csv("/home/zhluo/Project/CRC/data_nazhang/colorectal-cancer/MasigPro/gene_tss_%s.bed" % distence, sep="\t", header=False,  index=False)    
         
     def run_multiBamSummary(self, markers=["H3K27me3"], bs="H3K27me3.bed", bed_file=None):
@@ -463,4 +468,5 @@ if __name__ == "__main__":
     #gene_cal.merge_single_marker_without_input(marker="H3K27ac")
     #gene_cal.merge_single_marker_without_input(marker="H3K4me1")
     
-    gene_cal.get_TSS(distence=0)
+    gene_cal.get_TSS(distence=1)
+    gene_cal.get_gene_body()
