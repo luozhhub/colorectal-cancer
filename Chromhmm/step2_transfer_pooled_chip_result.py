@@ -149,8 +149,33 @@ def transfer_peak():
 
         os.system("scp %s zhluo@211.69.141.147:/home/zhluo/Project/CRC/data_nazhang/step30_peak/every_peak" % every_0_peak)
         os.system("scp %s zhluo@211.69.141.147:/home/zhluo/Project/CRC/data_nazhang/step30_peak/every_peak" % every_1_peak)
-        os.system("scp %s zhluo@211.69.141.147:/home/zhluo/Project/CRC/data_nazhang/step30_peak/every_peak" % every_2_peak)        
+        os.system("scp %s zhluo@211.69.141.147:/home/zhluo/Project/CRC/data_nazhang/step30_peak/every_peak" % every_2_peak)  
+        
+        
+        
+def transfer_pooled_tagAlign():
+    logDir = "/public/home/zhluo/project/CRC_data/step24_cromwell/last_version"
+    dataBaseDir = "/public/home/zhluo/project/CRC_data/step24_cromwell/cromwell-executions/chip/"
+    files = os.listdir(logDir)
+    for oneF in files:
+        #get job ID
+        if not re.search(".out", oneF):
+            continue
+        handle = open(os.path.join(logDir, oneF), "r")
+        lines = handle.readlines()
+        jobID = (lines[195].split("/")[9])
+
+        #get bigwig path    
+        pooled_dir = os.path.join(dataBaseDir, jobID, "call-pool_ta/execution")
+        files_p = os.listdir(pooled_dir)
+        for oneP in files_p:
+            if not re.search(".tagAlign.gz", oneP):
+                continue
+            bigwigF = oneP
+        pooled_bigwig = os.path.join(pooled_dir, bigwigF)
+        os.system("scp zhluo@211.69.141.130:%s /home/zhihl/zhaochen/chip/pooled_tagAlign/" % pooled_bigwig)      
              
 
 if __name__ == "__main__":
-    transfer_peak()
+    #transfer_peak()
+    transfer_pooled_tagAlign()
