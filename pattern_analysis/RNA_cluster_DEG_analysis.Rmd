@@ -1,0 +1,39 @@
+---
+title: "rna cluster DEG"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r summary, echo=FALSE}
+setwd("D:/chenlab/CRC")
+data = read.csv("DEG_summary.txt", sep="\t")
+data$week = factor(data$week, levels = c(2,4,7,10))
+library(ggplot2)
+library(ggsci)
+
+pdf("DEG_peaks_gene_number_in_cluster.pdf")
+ggplot(data,aes(x=week,y=deg_number, fill=cluster)) +
+  geom_bar(stat="identity")+
+  #geom_line() +
+  scale_color_uchicago()+ 
+  theme_bw()+theme(plot.title=element_text(size=rel( 1.5),hjust= 0.5), 
+                                              axis.title=element_text(size=rel(1.5)), 
+                                      axis.text=element_text(size=rel( 1)), 
+                                      panel.grid.major=element_line(color= "white"),
+                                      panel.grid.minor=element_line(color= "white"), 
+                                      panel.border=element_rect(color= "white"),
+                                      axis.line=element_line(color= "black",size= 1)) +
+  ylab("DEG peak genes")+xlab("")+facet_wrap(~marker,scales = "free") +
+ geom_smooth(se=FALSE,formula = y ~ splines::ns(x,20), method ='lm',size=0.7)
+dev.off()
+```
+
