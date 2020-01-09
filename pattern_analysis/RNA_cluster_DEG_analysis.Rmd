@@ -37,3 +37,18 @@ ggplot(data,aes(x=week,y=deg_number, fill=cluster)) +
 dev.off()
 ```
 
+##cancer gene list in 9 clusters
+```{r driver_gene, echo=FALSE}
+setwd("D:/chenlab/CRC")
+data = read.csv("driver_summary.txt", sep="\t")
+percent = data$intersect_number/data$cluster_gene_number
+data = cbind(data, percent)
+data$cluster_name = substring(data$cluster_name, 22, 22) 
+library(ggplot2)
+library(ggsci)
+pdf("driver_gene_in_cluster.pdf")
+ggplot(data, aes(x=cluster_name, y=percent)) + 
+  geom_bar(stat="identity") +
+  scale_color_uchicago()
+dev.off()
+```
